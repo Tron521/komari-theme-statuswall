@@ -2,6 +2,16 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.6.6 — 2026-11-03
+
+### Fixed
+
+- Phones: after pressing or dragging along the ping strip, the highlighted column, crosshair and dimmed
+  segments now reset by themselves. The reset used to wait for `pointerout`, which iOS does not reliably
+  send when a drag turns into a scroll, so the strip could stay highlighted. It now listens for the
+  finger lifting (`pointerup`) or the gesture being taken over (`pointercancel`) and resets 1.2 s later,
+  and any page scroll resets it at once. Pressing another card's strip clears the previous one.
+
 ## 2.6.5 — 2026-11-03
 
 ### Changed

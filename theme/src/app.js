@@ -2393,12 +2393,8 @@ function initTip() {
     const target = ev.target.closest && ev.target.closest('[data-tip]');
     if (!target || target !== tip.target) return;
     if (ev.relatedTarget && target.contains(ev.relatedTarget)) return;
-    // 触屏抬手后三网对比再留 2.5 秒，轻点一下也来得及看清
-    if (ev.pointerType !== 'mouse' && target.classList.contains('pings')) {
-      clearTimeout(tip.timer);
-      tip.timer = setTimeout(() => { tipHide(); clearXhair(target); target.setAttribute('data-tip', pingsTip()); }, 2500);
-      return;
-    }
+    // 触屏的三网对比由「抬手 / 取消」统一延时收起，这里不提前关
+    if (ev.pointerType !== 'mouse' && target.classList.contains('pings')) return;
     tipHide();
   });
   document.addEventListener('pointerdown', tipHide, true);
@@ -2413,7 +2409,10 @@ function initTip() {
     tipShow(text, { clientX: r.left + r.width / 2, clientY: r.bottom });
   });
   document.addEventListener('focusout', tipHide, true);
-  window.addEventListener('scroll', () => { if (tip.open) tipHide(); }, true);
+  window.addEventListener('scroll', () => {
+    if (tip.open) tipHide();
+    if (touchXhair) endTouchXhair(0);
+  }, true);
 }
 
 // 三网信号条：横着指向某一刻，三条线同时高亮并给出那一刻的对比
@@ -2478,7 +2477,27 @@ function xhairAt(pings, target, clientX, clientY, force) {
   }
 }
 
+/* 触屏「按住看某一刻」的收尾：抬手、被系统取消（开始滚动）或页面滚动后，
+   稍等片刻收起提示并恢复所有状态条，不依赖 pointerout（iOS 上不一定触发） */
+let touchXhair = false;
+let touchXhairTimer = 0;
+function endTouchXhair(delay) {
+  clearTimeout(touchXhairTimer);
+  touchXhairTimer = setTimeout(() => {
+    touchXhair = false;
+    tipHide();
+    for (const pg of $$('.pings[data-x]')) {
+      clearXhair(pg);
+      pg.setAttribute('data-tip', pingsTip());
+    }
+  }, delay);
+}
+
 function initCrosshair() {
+  const onTouchEnd = (ev) => { if (ev.pointerType !== 'mouse' && touchXhair) endTouchXhair(1200); };
+  document.addEventListener('pointerup', onTouchEnd, true);
+  document.addEventListener('pointercancel', onTouchEnd, true);
+
   document.addEventListener('pointermove', (ev) => {
     const pings = ev.target.closest && ev.target.closest('.pings');
     if (!pings) return;
@@ -2491,6 +2510,10 @@ function initCrosshair() {
     if (ev.pointerType === 'mouse') return;
     const pings = ev.target.closest && ev.target.closest('.pings');
     if (!pings || !ev.target.closest('.lbars')) return;
+    clearTimeout(touchXhairTimer);
+    // 换了一张卡片按：先把上一张的高亮清掉
+    for (const pg of $$('.pings[data-x]')) if (pg !== pings) clearXhair(pg);
+    touchXhair = true;
     delete pings.dataset.x;
     xhairAt(pings, ev.target, ev.clientX, ev.clientY, true);
   }, true);
