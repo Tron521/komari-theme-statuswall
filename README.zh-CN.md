@@ -53,6 +53,12 @@ StatusWall 把 Komari 的节点列表做成一面能一眼扫完的墙。每台�
    `komari-theme.json` 和 `dist/` 处在这一层）。
 3. 选中「Komari 状态墙」，打开站点。
 
+**本地试看（合成数据，不需要 Komari）**
+
+```bash
+npm run demo           # 构建并在 http://127.0.0.1:8090 起一个带假数据的演示站
+```
+
 **从源码构建**
 
 ```bash

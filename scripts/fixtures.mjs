@@ -51,7 +51,7 @@ export const NODES = [
     cpu_name: 'AMD EPYC 7443P 24-Core Processor', virtualization: 'kvm', arch: 'amd64',
     cpu_cores: 6, cpu_physical_cores: 3, os: 'Debian 12', kernel_version: '6.1.0-26-amd64',
     gpu_name: 'None', public_remark: '数据库从库', mem_total: 16 * GB, swap_total: 0,
-    disk_total: 320 * GB, weight: 2, price: 0, billing_cycle: 0, auto_renewal: false,
+    disk_total: 320 * GB, weight: 2, price: -1, billing_cycle: 0, auto_renewal: false,
     currency: '¥', expired_at: null, group: 'db', tags: 'db, 开源机',
     hidden: false, traffic_limit: 0, traffic_limit_type: 'sum',
     created_at: fromNow(-700), updated_at: new Date().toISOString(),
