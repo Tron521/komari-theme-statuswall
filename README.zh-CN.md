@@ -10,7 +10,7 @@
 | --- | --- |
 | <img src="docs/screenshots/desktop.png" alt="桌面" width="560"> | <img src="docs/screenshots/mobile.png" alt="手机" width="200"> |
 
-截图都是虚构的演示数据。笔记本尺寸见 [docs/screenshots/laptop.png](docs/screenshots/laptop.png)。
+截图都是虚构的演示数据。笔记本尺寸见 [docs/screenshots/laptop.png](docs/screenshots/laptop.png)，手机整页长图见 [docs/screenshots/mobile-full.png](docs/screenshots/mobile-full.png)。
 
 ## 这是什么
 

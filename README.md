@@ -10,7 +10,7 @@
 | --- | --- |
 | <img src="docs/screenshots/desktop.png" alt="Desktop" width="560"> | <img src="docs/screenshots/mobile.png" alt="Phone" width="200"> |
 
-All screenshots use synthetic demo data. Laptop size: [docs/screenshots/laptop.png](docs/screenshots/laptop.png).
+All screenshots use synthetic demo data. Laptop size: [docs/screenshots/laptop.png](docs/screenshots/laptop.png); full-length phone page: [docs/screenshots/mobile-full.png](docs/screenshots/mobile-full.png).
 
 ## What it is
 
