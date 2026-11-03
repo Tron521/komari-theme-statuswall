@@ -62,6 +62,12 @@ controls.
    `data/theme/StatusWall/` so that `komari-theme.json` and `dist/` sit at that level).
 3. Select **Komari StatusWall** as the active theme and open the site.
 
+**Try it locally (synthetic data, no Komari needed)**
+
+```bash
+npm run demo           # builds, then serves a demo with fake nodes on http://127.0.0.1:8090
+```
+
 **From source**
 
 ```bash
