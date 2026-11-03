@@ -66,10 +66,11 @@
   --orange: #cb4b16;
 
   /* 三网条带专用：常态墨绿低彩度，抖动才按黄→橙→红升温 */
-  --bar-1: #8d9d33;
-  --bar-2: #b58900;
-  --bar-3: #cb4b16;
-  --bar-4: #dc322f;
+  --seg-ok: #96a93a;
+  --seg-slow: #d0a72a;
+  --seg-bad: #d66a35;
+  --seg-loss: #dc322f;
+  --seg-none: color-mix(in srgb, var(--ink-4) 16%, transparent);
 
   --up: #cb4b16;
   --down: #268bd2;
@@ -131,10 +132,11 @@ html[data-scheme="dark"] {
   --orange: #ec7539;
 
   /* 深色下条带压低一档亮度，别在深底上泛荧光 */
-  --bar-1: #8b9f28;
-  --bar-2: #d6a616;
-  --bar-3: #e0672b;
-  --bar-4: #f4685f;
+  --seg-ok: #6f8c1f;
+  --seg-slow: #c99a12;
+  --seg-bad: #e0672b;
+  --seg-loss: #f4685f;
+  --seg-none: color-mix(in srgb, var(--ink-4) 22%, transparent);
   --up: #ec7539;
   --down: #58b2ee;
   --cpu: #44cdc0;
@@ -541,7 +543,9 @@ a.btn[hidden] { display: none; }
 .grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: minmax(min-content, 1fr);
+  /* 卡片按内容自然高度排，同一行等高；机器少时不再被拉高、内部空出大段留白 */
+  grid-auto-rows: auto;
+  align-content: start;
   gap: var(--gap);
   flex: 1 1 auto;
   /* 首屏放得下时填满高度；放不下时整页滚动，卡片本身不被压扁 */
@@ -907,52 +911,29 @@ html::-webkit-scrollbar-thumb:hover {
   white-space: nowrap;
 }
 
-/* 24 根信号条：高度=延迟强度，颜色=延迟/丢包级别，透明度=丢包占比 */
+/* 24 格状态条：等高圆角小格，颜色只回答一个问题——这段时间这条线路好不好 */
 .lbars {
   position: relative;
   flex: 1 1 auto;
   display: flex;
-  align-items: flex-end;
-  justify-content: stretch;
+  align-items: stretch;
   gap: 2px;
-  height: 34px;
+  height: 14px;
   min-width: 40px;
-  padding-bottom: 1px;
-  border-radius: 3px;
-  /* 不铺底板：留白就是纸，只有一条基线当地面 */
-}
-/* 一条淡基线当作「地面」，24 根柱子从它上面长出来 */
-.lbars::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: color-mix(in srgb, var(--line) 72%, transparent);
-  pointer-events: none;
 }
 .lbars i {
   flex: 1 1 0;
-  min-width: 1px;
-  height: 100%;
-  transform: scaleY(var(--h, 0.08));
-  transform-origin: bottom;
-  border-radius: 1.5px 1.5px 0 0;
-  background: color-mix(in srgb, var(--c, var(--ink-4)) 86%, var(--bg));
-  /* 丢包 = 信号变弱：越丢越淡，颜色只表示延迟高低 */
-  opacity: calc(1 - var(--loss, 0) * 0.45);
-  transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 200ms ease;
+  min-width: 2px;
+  border-radius: 2.5px;
+  background: var(--c, var(--seg-none));
+  transition: background-color 300ms ease, opacity 200ms ease;
 }
-
-/* 深色底上把条带压回去一档，别泛荧光 */
-html[data-scheme="dark"] .lbars i { background: color-mix(in srgb, var(--c, var(--ink-4)) 78%, var(--bg)); }
 
 /* 延迟数字默认就是墨色；只有丢包真的严重时才染红，别让 1% 的小抖动抢戏 */
 .lane[data-level="crit"] .lms { color: var(--crit-ink); }
 .lane[data-level="off"] .lms { color: var(--ink-4); }
 .lane[data-level="off"] .lu { display: none; }
-.lane[data-empty="1"] .lbars i { background: var(--ink-4); opacity: 0.22; }
+.lane[data-empty="1"] .lbars i { background: var(--seg-none); }
 
 /* 财务：一条发丝线把它和上面的信号区隔开，卡片读起来是三段 */
 
@@ -1129,13 +1110,13 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
 .deck[data-state="ready"] .totals { animation: rise-in 420ms cubic-bezier(0.22, 0.61, 0.36, 1) 60ms both; }
 .deck[data-state="ready"] .wall { animation: rise-in 460ms cubic-bezier(0.22, 0.61, 0.36, 1) 40ms both; }
 
-/* 数据到位的那个瞬间：三网条带从基线往上长，三条线依次 70ms */
-.grid[data-grow] .lbars { animation: lbars-grow 620ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+/* 数据到位的那个瞬间：三条状态条从左往右刷出来，三条线依次 70ms */
+.grid[data-grow] .lbars { animation: lbars-grow 560ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
 .grid[data-grow] .lane:nth-child(2) .lbars { animation-delay: 70ms; }
 .grid[data-grow] .lane:nth-child(3) .lbars { animation-delay: 140ms; }
 @keyframes lbars-grow {
-  from { transform: scaleY(0.02); opacity: 0.3; }
-  to { transform: none; opacity: 1; }
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
 }
 
 
@@ -1182,7 +1163,7 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
   .vitals { gap: 9px; }
   .vv { font-size: 15px; }
   .pings { gap: 5px; }
-  .lbars { height: 22px; }
+  .lbars { height: 12px; }
   .fin { padding-top: 6px; }
 }
 
@@ -1191,7 +1172,7 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
   .deck { --card-pad: 15px; }
   .card { gap: 8px; }
   .pings { gap: 5px; }
-  .lbars { height: 24px; }
+  .lbars { height: 13px; }
   .fin { padding-top: 6px; }
 }
 
@@ -1277,10 +1258,9 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
   .nm { font-size: 14px; }
   .vitals { gap: 8px; }
   .vv { font-size: 15px; }
-  /* 手机上把三网条压薄一点，第二张卡能早一点露头 */
-  .pings { gap: 5px; }
+  .pings { gap: 6px; }
   .lane { gap: 8px; }
-  .lbars { height: 26px; }
+  .lbars { height: 13px; }
   .vital .track { margin-top: 5px; }
   .vd { margin-top: 4px; }
   /* 详情里的趋势图在窄屏必须整行，两列会把「现/峰」挤到换行 */
@@ -1448,7 +1428,6 @@ html[data-scheme="dark"] .tip { background: #063542; border-color: rgba(147, 161
   .card:hover { transform: translateY(-1px); box-shadow: 0 20px 38px -28px rgba(88, 110, 117, 0.7); }
   .card[data-expanded="true"]:hover { transform: none; }
   .card:hover .more { color: var(--ink); border-color: color-mix(in srgb, var(--blue) 34%, var(--card-line)); }
-  .card:hover .lbars i { filter: saturate(1.08); }
 }
 
 /* 没有 hover 的设备（大平板、横屏手机）：置顶星必须可见，否则是个看不见的按钮 */
@@ -1635,4 +1614,4 @@ html[data-scheme="dark"] .toast { background: #063542; }
 .lloss[data-lv="warn"] { color: var(--warn-ink); }
 
 
-.lbars i[data-none="1"] { opacity: 0.3; }
+.lbars i[data-none="1"] { background: var(--seg-none); }

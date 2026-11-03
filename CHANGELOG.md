@@ -2,6 +2,27 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.6.0 — 2026-11-03
+
+### Changed
+
+- The three-network strip is now a row of 24 equal-height rounded segments, the uptime-bar style used
+  by the most popular Komari themes, instead of bars whose height was stretched to each line's own
+  min–max (which made quiet lines look jumpy). Colour answers one question per segment: green normal,
+  yellow slow or one probe lost, orange very slow or two lost, red three or more lost or all timed out.
+  Thresholds count lost probes per five-minute segment, so routes with chronic light loss stay mostly
+  green and a real outage shows as a red run. The strip is shorter, so cards are shorter too.
+- Cards take their natural height (rows stay equal) instead of stretching to fill the screen, so a
+  wall with few nodes no longer opens large gaps inside each card.
+- The ping window ends at the newest probe record instead of "now", so the last segment is no longer
+  empty while the current minutes are still being written.
+- Calmer segment greens in the dark scheme.
+
+### Fixed
+
+- The strip picked up the loss badge as its first segment, shifting every segment one slot to the left:
+  the last segment was always grey and hover times were off by one segment.
+
 ## 2.5.2 — 2026-11-03
 
 ### Fixed

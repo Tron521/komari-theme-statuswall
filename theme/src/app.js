@@ -22,10 +22,20 @@ const SETTING_KEYS = Object.keys(DEFAULTS);
 
 const POLL_PING_MS = 12000;
 
-const LB = 24; // 三网信号条桶数
-/* 条带专用色阶：常态是低彩度的墨绿，只有真的抖动才升到黄/橙/红 */
-const LATENCY_RAMP = ['var(--bar-1)', 'var(--bar-2)', 'var(--bar-3)', 'var(--bar-4)'];
-const LOSS_RAMP = ['var(--ink-4)', 'var(--ok)', 'var(--warn)', 'var(--up)', 'var(--crit)'];
+const LB = 24; // 三网状态条格数
+const SEG = { ok: 'var(--seg-ok)', slow: 'var(--seg-slow)', bad: 'var(--seg-bad)', loss: 'var(--seg-loss)' };
+
+/* 一格的状态。一格只有几次探测（2 小时 / 24 格 ≈ 5 分钟），丢 1 次就是 20%，
+   所以按「丢了几次」分级；不丢包时看延迟比这条线路平时（中位数）高出多少。
+   国内线路常年有零星丢包，这样平时是一片绿，真正断流才会成片发红。 */
+function segmentLevel(bk, med) {
+  if (bk.ms == null || bk.loss >= 60) return 'loss';
+  const over = med > 0 ? (bk.ms - med) / med : 0;
+  if (bk.loss >= 40 || over >= 0.6) return 'bad';
+  if (bk.loss >= 20 || over >= 0.25) return 'slow';
+  return 'ok';
+}
+const SEG_TEXT = { ok: '正常', slow: '偏慢', bad: '很慢或丢包', loss: '丢包严重' };
 const NB = 30; // 波形桶数（历史窗口）
 const CHART_W = 600;
 const CHART_H = 96;
@@ -818,20 +828,25 @@ function percentile(values, p) {
   return arr[idx];
 }
 
-function levelIndex(value, thresholds) {
-  for (let i = 0; i < thresholds.length; i += 1) {
-    if (value <= thresholds[i]) return i;
-  }
-  return thresholds.length;
+/* 三网窗口以最新一条探测记录为终点：当前这几分钟的记录往往还没写进库，
+   用「现在」当终点会让每条状态条最右边永远空着一格 */
+function pingRange() {
+  const hours = state.settings.historyHours;
+  const end = state.pingEnd || Date.now();
+  const span = hours * 3600_000;
+  return { start: end - span, end, span };
 }
 
 function bucketStartFor(index) {
-  const { start, span } = bucketRange();
+  const { start, span } = pingRange();
   return start + span * (index + 0.5) / LB;
 }
 
 function buildPingBuckets() {
-  const { start, span } = bucketRange();
+  let latest = 0;
+  for (const map of state.ping.values()) for (const arr of map.values()) if (arr.length) latest = Math.max(latest, arr[arr.length - 1][0]);
+  state.pingEnd = latest && latest > Date.now() - 30 * 60_000 ? latest + 1 : 0;
+  const { start, span } = pingRange();
   state.pingBuckets.clear();
   for (const uuid of state.order) {
     const map = state.ping.get(uuid);
@@ -840,6 +855,7 @@ function buildPingBuckets() {
       for (const [taskId, arr] of map) {
         const acc = Array.from({ length: LB }, () => ({ sum: 0, ok: 0, lost: 0 }));
         for (const [t, value] of arr) {
+          if (t < start) continue;
           const i = clamp(Math.floor((t - start) / span * LB), 0, LB - 1);
           if (value < 0) acc[i].lost += 1;
           else if (value > 0) { acc[i].sum += value; acc[i].ok += 1; }
@@ -1544,13 +1560,12 @@ function renderLanes(view, withLanes) {
   for (const lane of $$('.lane', refs.root)) {
     const taskId = Number(lane.dataset.task);
     const buckets = pb ? pb.get(taskId) : null;
-    const bars = $$('i', lane);
+    const bars = $$('.lbars i', lane);
     if (!buckets || !buckets.some(Boolean)) {
       lane.dataset.empty = '1';
       for (const bar of bars) {
-        bar.style.setProperty('--h', '0');
-        bar.style.setProperty('--c', 'var(--ink-4)');
-        bar.style.setProperty('--loss', '0');
+        bar.style.removeProperty('--c');
+        delete bar.dataset.lv;
         delete bar.dataset.ms;
         delete bar.dataset.loss;
         delete bar.dataset.t;
@@ -1559,39 +1574,23 @@ function renderLanes(view, withLanes) {
     }
     lane.dataset.empty = '0';
     const valid = buckets.filter((x) => x && x.ms != null).map((x) => x.ms);
-    const lo = valid.length ? percentile(valid, 0.05) : 0;
-    const hi = Math.max(lo + 12, valid.length ? percentile(valid, 0.99) : lo + 12);
-    // 颜色按「相对这条线路自己的常态偏高多少」分级：多数格子安静，只有真的抖了才上色
     const med = valid.length ? percentile(valid, 0.5) : 0;
-    const iqr = valid.length ? Math.max(8, percentile(valid, 0.75) - percentile(valid, 0.25)) : 8;
     for (let i = 0; i < bars.length; i += 1) {
       const bk = buckets[i];
       const bar = bars[i];
       if (!bk || (bk.ms == null && bk.loss <= 0)) {
-        bar.style.setProperty('--h', '0');
-        bar.style.setProperty('--c', 'var(--ink-4)');
-        bar.style.setProperty('--loss', '0');
+        bar.style.removeProperty('--c');
         bar.dataset.none = '1';
         delete bar.dataset.ms;
         delete bar.dataset.loss;
         delete bar.dataset.t;
+        delete bar.dataset.lv;
         continue;
       }
       delete bar.dataset.none;
-      /* 0.78 次幂：把中间高度托起来，条带读得出形状，又不改变大小关系 */
-      const h = bk.ms == null ? 1 : clamp(Math.pow(clamp((bk.ms - lo) / (hi - lo), 0, 1), 0.78), 0.12, 1);
-      let color;
-      if (bk.ms == null) {
-        color = LOSS_RAMP[levelIndex(bk.loss, [0.5, 2, 5, 10])];
-      } else {
-        const dev = (bk.ms - med) / iqr;
-        /* 门槛放在 0.9 个四分位距：一半以上的格子保持安静，抖动才跳色 */
-        const lv = dev >= 3.2 ? 3 : dev >= 1.9 ? 2 : dev >= 0.9 ? 1 : 0;
-        color = LATENCY_RAMP[lv];
-      }
-      bar.style.setProperty('--h', String(h));
-      bar.style.setProperty('--c', color);
-      bar.style.setProperty('--loss', String(clamp(bk.loss / 10, 0, 1)));
+      const lv = segmentLevel(bk, med);
+      bar.style.setProperty('--c', SEG[lv]);
+      bar.dataset.lv = lv;
       bar.dataset.t = String(bucketStartFor(i));
       bar.dataset.ms = bk.ms == null ? '' : String(Math.round(bk.ms));
       bar.dataset.loss = num(bk.loss, 1);
@@ -2277,9 +2276,9 @@ function pingsTip() {
   const h = Number(state.settings.historyHours) || 2;
   const min = Math.max(1, Math.round(h * 60 / LB));
   return [
-    `!三网延迟 · 近 ${h} 小时 / ${LB} 根`,
-    `每根 ${min} 分钟，从左到右是时间`,
-    '高度=延迟 · 颜色=快慢 · 越淡=丢包越多',
+    `!三网延迟 · 近 ${h} 小时 / ${LB} 格`,
+    `每格 ${min} 分钟，从左到右是时间`,
+    '绿=正常 · 黄=偏慢 · 橙=很慢或丢包 · 红=丢包严重',
     '悬停看某一刻的三网对比',
   ].join('\n');
 }
@@ -2447,8 +2446,9 @@ function initCrosshair() {
       const b = laneBars && laneBars.children[idx];
       const ms = b && b.dataset ? b.dataset.ms : '';
       const loss = b && b.dataset ? b.dataset.loss : '';
-      if (!ms) return `${key}|—`;
-      return `${key}|${ms} ms · 丢 ${loss}%`;
+      const lv = b && b.dataset ? b.dataset.lv : '';
+      if (!lv) return `${key}|—`;
+      return `${key}|${ms ? `${ms} ms` : '全部超时'} · 丢 ${loss}% · ${SEG_TEXT[lv]}`;
     });
     const first = lanes[0] && lanes[0].querySelector('.lbars');
     const t0 = first && first.children[idx] ? first.children[idx].dataset.t : '';

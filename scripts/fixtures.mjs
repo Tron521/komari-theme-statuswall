@@ -203,7 +203,12 @@ export function pingRecords(hours = 2) {
     for (let k = 0; k < count; k += 1) {
       const t = new Date(now - (count - 1 - k) * step).toISOString();
       rows.forEach((row, j) => {
-        const ms = Math.round(row.latest * (0.75 + 0.5 * point(k + i + j * 3)));
+        let ms = Math.round(row.latest * (0.92 + 0.16 * point(k + i + j * 3)));
+        // 让状态条有内容可看：按每条线路的丢包率零星超时，偶尔一段延迟尖峰或断流
+        const h = (k * 31 + i * 17 + j * 7) % 100;
+        if (h < row.loss) ms = -1;
+        else if ((k + i * 11 + j * 5) % 47 < 3) ms = Math.round(ms * 1.9);
+        if (i === 5 && j === 2 && k > count - 30 && k < count - 22) ms = -1;
         out.push({ client: n.uuid, task_id: j + 1, time: t, value: ms, loss: row.loss });
       });
     }
