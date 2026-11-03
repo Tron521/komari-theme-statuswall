@@ -1316,14 +1316,7 @@ function buildRows() {
     el.querySelector('[data-f="toggle"]').addEventListener('click', () => toggleDetail(uuid));
     const pin = el.querySelector('[data-f="pin"]');
     if (pin) pin.addEventListener('click', () => togglePin(uuid));
-    // 整张卡片都能点开/收起（键盘仍走上面的按钮）；选中文字时不误触
-    el.addEventListener('click', (ev) => {
-      // 状态条是用来按住看某一刻的，点它不展开卡片
-      if (ev.target.closest('a, button, input, select, textarea, label, .lbars')) return;
-      const picked = window.getSelection ? String(window.getSelection()) : '';
-      if (picked.length > 1) return;
-      toggleDetail(uuid);
-    });
+    // 只有右上角的箭头展开 / 收起：整张卡片可点会和三网拖动、选字、滚动打架
     const panel = el.querySelector('.card-detail');
     if (panel) { panel.hidden = true; delete panel.dataset.filled; }
   }
@@ -1690,7 +1683,9 @@ function revealExpanded(card) {
     const scroller = wall && wall.scrollHeight > wall.clientHeight + 4 ? wall : null;
     const view = scroller ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
     const box = card.getBoundingClientRect();
-    const below = Math.round(box.bottom - view.bottom + 10);
+    // 卡片比一屏还高（手机上展开后常见）：只保证顶部和箭头可见，不滚到底把箭头推出屏幕
+    const tooTall = box.height > (view.bottom - view.top) - 20;
+    const below = tooTall ? 0 : Math.round(box.bottom - view.bottom + 10);
     const above = Math.round(view.top - box.top + 10);
     if (below > 0) {
       if (scroller) scroller.scrollBy({ top: below, behavior });
@@ -1848,7 +1843,18 @@ function buildDetail(uuid, panel) {
       ? `<div class="detail-note">备注：${state.privacy ? '—（隐私模式）' : escapeHTML(cleanName(node.public_remark))}</div>`
       : ''}
     ${msg ? `<div class="detail-note warn">节点消息：${escapeHTML(msg)}</div>` : ''}
+    <button class="btn detail-close" type="button" data-close="1">收起明细</button>
   `;
+  const close = panel.querySelector('[data-close]');
+  if (close) {
+    close.addEventListener('click', () => {
+      toggleDetail(uuid);
+      // 收起后把卡片顶部带回视野，手指不用再往上翻
+      const refs = state.refs.get(uuid);
+      if (refs) refs.root.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+      if (refs && refs.toggle) refs.toggle.focus({ preventScroll: true });
+    });
+  }
 }
 
 function trafficTypeText(t) {

@@ -20,7 +20,7 @@ money and remaining value at the bottom. Nothing moves unless the data moves.
 
 Every number the default theme shows is still here, plus a few it never surfaced:
 
-| On the card | In the detail panel (click anywhere on a card) |
+| On the card | In the detail panel (open with the arrow at the top right of a card) |
 | --- | --- |
 | CPU / memory / disk, each as `%` **and** `used / total` | 20+ sensor rows: CPU model, cores, GPU, kernel, virtualisation, swap, load 1/5/15, TCP/UDP connections, process count, uptime, traffic in/out, cost model, expiry, remaining value, group, tags, remark |
 | Cumulative traffic vs. quota, with a bar | Four hourly trend charts — CPU, memory, disk, network |

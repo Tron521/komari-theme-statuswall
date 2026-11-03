@@ -2,6 +2,21 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.6.5 — 2026-11-03
+
+### Changed
+
+- Only the arrow at the top right of a card opens or closes its details. Clicking anywhere on the card
+  used to toggle it too, which collided with dragging the ping strip, selecting text and scrolling.
+  Cards lose the pointer cursor and the hover lift / press dip that suggested the whole card was a button.
+- On touch screens the arrow is a visible 36 px button, and the expanded details end with a full-width
+  `收起明细` button that closes them and brings the card's top back into view.
+
+### Fixed
+
+- Expanding a card taller than the screen (common on phones) no longer scrolls to its bottom and pushes
+  the arrow off-screen; the top of the card stays in view.
+
 ## 2.6.4 — 2026-11-03
 
 ### Fixed

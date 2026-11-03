@@ -590,7 +590,6 @@ html::-webkit-scrollbar-thumb:hover {
   box-shadow: var(--card-shadow), inset 0 1px 0 var(--card-hi);
   backdrop-filter: blur(22px) saturate(160%);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
-  cursor: pointer;
   transition:
     border-color 160ms ease,
     background-color 160ms ease,
@@ -605,7 +604,6 @@ html::-webkit-scrollbar-thumb:hover {
   pointer-events: none;
   background: radial-gradient(115% 62% at 16% -12%, var(--card-glow), transparent 62%);
 }
-.card:active { transform: translateY(1px); }
 .card:focus-within { border-color: color-mix(in srgb, var(--blue) 42%, var(--card-line)); }
 
 .card:hover { border-color: color-mix(in srgb, var(--blue) 26%, var(--card-line)); }
@@ -1440,14 +1438,27 @@ html[data-scheme="dark"] .tip { background: #063542; border-color: rgba(147, 161
 /* 悬停抬升只在真有指针的设备上生效：触屏点完不会一直"浮"着 */
 @media (hover: hover) {
   .card { transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
-  .card:hover { transform: translateY(-1px); box-shadow: 0 20px 38px -28px rgba(88, 110, 117, 0.7); }
   .card[data-expanded="true"]:hover { transform: none; }
   .card:hover .more { color: var(--ink); border-color: color-mix(in srgb, var(--blue) 34%, var(--card-line)); }
 }
 
 /* 没有 hover 的设备（大平板、横屏手机）：置顶星必须可见，否则是个看不见的按钮 */
+/* 详情底部的「收起明细」：桌面上有箭头就够了，只在触屏上出现 */
+.detail-close { display: none; }
+
 @media (hover: none) {
   .card .pin { opacity: 1; }
+  .detail-close { display: flex; justify-content: center; width: 100%; height: 36px; margin-top: 4px; }
+  /* 触屏上展开只靠这个箭头：做成看得出是按钮的样子，命中区域放大到 36px */
+  .more {
+    width: 36px;
+    height: 36px;
+    margin: -8px -8px 0 0;
+    border-color: var(--line-2);
+    background: color-mix(in srgb, var(--card-2) 70%, transparent);
+    color: var(--ink-2);
+  }
+  .pin { width: 36px; height: 36px; margin: -8px 0 0 0; }
 }
 
 /* 打印：只留卡片本身 */
