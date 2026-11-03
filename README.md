@@ -59,7 +59,7 @@ controls.
 
 1. Download `StatusWall-<version>.zip` from the releases page.
 2. In the Komari admin, open **主题 / Themes** and install the zip (or unzip it into
-   `data/themes/StatusWall/` so that `komari-theme.json` and `dist/` sit at that level).
+   `data/theme/StatusWall/` so that `komari-theme.json` and `dist/` sit at that level).
 3. Select **Komari StatusWall** as the active theme and open the site.
 
 **From source**
@@ -79,15 +79,15 @@ calls.
 | Key | Default | What it does |
 | --- | --- | --- |
 | `refreshInterval` | `3` | WebSocket refresh interval, 2–30 s |
-| `historyHours` | `2` | Window used by the detail trends, 1–24 h |
-| `showTrace` | `true` | Show the 3×24 latency/loss strip on cards |
+| `historyHours` | `2` | Window for the ping strip and detail trends: 1, 2, 3 or 6 h |
+| `showTrace` | `true` | Show the four hourly trend charts in the detail panel |
 | `warnThreshold` | `85` | Usage above which a vital turns amber |
 | `colorMode` | `auto` | `auto` / `light` / `dark` (the header toggle overrides it per browser) |
 | `hiddenNodes` | empty | Comma / space / semicolon separated node names or 4-char UUID prefixes; hidden nodes are excluded from cards, totals, alerts and the footer |
 | `offlineLast` | `false` | Sort offline nodes to the end of the wall (pinned nodes still come first) |
 | `icpText` | empty | Footer text such as an ICP filing number (max 80 chars) |
 | `icpUrl` | empty | Optional http(s) link for `icpText`; opens in a new tab |
-| `showFinance` | `true` | Show price / monthly cost / remaining value |
+| `showFinance` | `true` | Show price / monthly cost / remaining value; when off, the two money tiles become process and connection counts |
 | `usdCny` | `7.1` | Manual exchange rate for `$` prices |
 | `eurCny` | `8.0` | Manual exchange rate for `€` prices |
 

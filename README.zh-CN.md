@@ -49,7 +49,7 @@ StatusWall 把 Komari 的节点列表做成一面能一眼扫完的墙。每台�
 **用发布 zip**
 
 1. 从 Releases 下载 `StatusWall-<version>.zip`。
-2. 在 Komari 后台「主题」里安装这个 zip（或解压到 `data/themes/StatusWall/`，让
+2. 在 Komari 后台「主题」里安装这个 zip（或解压到 `data/theme/StatusWall/`，让
    `komari-theme.json` 和 `dist/` 处在这一层）。
 3. 选中「Komari 状态墙」，打开站点。
 
@@ -69,15 +69,15 @@ npm run package        # 生成 dist-package/StatusWall-<version>.zip
 | 键 | 默认 | 作用 |
 | --- | --- | --- |
 | `refreshInterval` | `3` | WebSocket 实时刷新间隔，2–30 秒 |
-| `historyHours` | `2` | 详情趋势图使用的时间窗，1–24 小时 |
-| `showTrace` | `true` | 是否在卡片上显示 3×24 延迟/丢包条 |
+| `historyHours` | `2` | 三网信号条与详情趋势图的时间窗，可选 1 / 2 / 3 / 6 小时 |
+| `showTrace` | `true` | 是否在详情面板里显示四张逐小时趋势图 |
 | `warnThreshold` | `85` | 使用率超过多少转琥珀色 |
 | `colorMode` | `auto` | `auto` / `light` / `dark`（顶栏切换会按浏览器覆盖） |
 | `hiddenNodes` | 空 | 逗号 / 空格 / 分号分隔的机器名或 4 位 UUID 前缀；被隐藏的机器不显示卡片，也不计入汇总、提醒和页脚 |
 | `offlineLast` | `false` | 离线机器排到最后（置顶的机器仍最前） |
 | `icpText` | 空 | 页脚文字，适合放 ICP 备案号（最多 80 字） |
 | `icpUrl` | 空 | 可选的 http(s) 链接；填写后备案文字在新标签页打开 |
-| `showFinance` | `true` | 是否显示价格 / 月成本 / 剩余价值 |
+| `showFinance` | `true` | 是否显示价格 / 月成本 / 剩余价值；关闭后顶部两格换成进程数与连接数 |
 | `usdCny` | `7.1` | `$` 价格的手动汇率 |
 | `eurCny` | `8.0` | `€` 价格的手动汇率 |
 

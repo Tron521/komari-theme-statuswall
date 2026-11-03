@@ -93,10 +93,6 @@ function splitBytes(v) {
   let i = 0;
   let x = abs;
   while (x >= 1024 && i < BYTE_UNITS.length - 1) { x /= 1024; i += 1; }
-  let digits = 0;
-  if (i === 0) digits = 0;
-  else if (x < 10) digits = 2;
-  else if (x < 100) digits = 1;
   return { value: x, unit: BYTE_UNITS[i] };
 }
 
@@ -212,11 +208,18 @@ function remainValue(price, cycle, expiredAt) {
   return price * (days / c);
 }
 
+// 一次性付费（周期 -1）或没填周期的机器不产生月成本
 function monthlyCost(price, cycle) {
   if (!price || price <= 0) return 0;
   const c = Number(cycle);
-  if (!Number.isFinite(c) || c <= 0) return price;
+  if (!Number.isFinite(c) || c <= 0) return 0;
   return price / c * 30;
+}
+
+// Komari 约定：价格 -1 表示免费，0 表示没填
+function priceText(price) {
+  if (price === -1) return '免费';
+  return price > 0 ? '' : '未填价格';
 }
 
 // ---------------------------------------------------------------- 状态
@@ -859,6 +862,7 @@ function computeNodeView(node) {
   const uptime = uptimeBase + elapsed;
   const days = daysUntil(node.expired_at);
   const price = Number(node.price) || 0;
+  const priceNote = priceText(price);
   const code = currencyCodeOf(node.currency);
   const rate = code === 'USD' ? state.settings.usdCny : code === 'EUR' ? state.settings.eurCny : 1;
   const priceCny = price * rate;
@@ -882,7 +886,7 @@ function computeNodeView(node) {
   return {
     node, live, online, cpu, ram, disk, memTotal, diskTotal, memPct, diskPct,
     up, down, totalUp, totalDown, limit, limitType, used, trafficPct, remain,
-    uptime, days, price, code, priceCny, monthlyCny, remainCny,
+    uptime, days, price, priceNote, code, priceCny, monthlyCny, remainCny,
     load1, load5: Number(live.load5) || 0, load15: Number(live.load15) || 0,
     cores, perCore, alert, message: cleanName(live.message),
   };
@@ -956,7 +960,20 @@ function summaryCells(s) {
       sub: `下行 ${down.v} ${down.u}/s`, bar: null,
       tip: ['!实时带宽（全部机器合计）', `上行|${fmtBps(s.up)}`, `下行|${fmtBps(s.down)}`, `合计|${fmtBps(s.up + s.down)}`].join('\n'),
     },
-    {
+    /* 关闭「显示价格」后页面上不能出现任何金额：两格换成进程与连接 */
+    ...(state.settings.showFinance ? [] : [
+      {
+        key: 'proc', label: '进程', v: nf0.format(s.proc), u: '', tone: '',
+        sub: '全部在线机器', bar: null,
+        tip: ['!进程（全部机器）', `合计|${nf0.format(s.proc)}`].join('\n'),
+      },
+      {
+        key: 'conn', label: '连接', v: nf0.format(s.conn), u: '', tone: '',
+        sub: 'TCP + UDP', bar: null,
+        tip: ['!连接（全部机器）', `合计|${nf0.format(s.conn)}`, '口径|TCP + UDP'].join('\n'),
+      },
+    ]),
+    ...(!state.settings.showFinance ? [] : [{
       key: 'monthly', label: '月成本', v: `¥${num(s.monthly, s.monthly >= 1000 ? 0 : 2)}`, u: '', tone: '',
       sub: `按计费周期折算`, bar: null,
       tip: ['!月成本', `合计|¥${num(s.monthly, 2)}`, '口径|价格 ÷ 周期天数 × 30', '汇率|手动设定'].join('\n'),
@@ -965,7 +982,7 @@ function summaryCells(s) {
       key: 'remain', label: '剩余价值', v: `¥${num(s.remain, s.remain >= 1000 ? 0 : 2)}`, u: '', tone: '',
       sub: `按剩余天数折算`, bar: null,
       tip: ['!剩余价值', `合计|¥${num(s.remain, 2)}`, '口径|价格 × 剩余天数 ÷ 周期天数', '汇率|手动设定'].join('\n'),
-    },
+    }]),
   ];
 }
 
@@ -1024,7 +1041,8 @@ function cardHTML(node) {
   const uid = escapeHTML(uuid);
   const name = escapeHTML(node._name || node.uuid.slice(0, 8));
   const flag = escapeHTML(String(node.region || '').trim());
-  const allTags = parseTags(node.tags);
+  // 隐私模式下卡面不露标签（详情里的分组/标签同样被遮住）
+  const allTags = state.privacy ? [] : parseTags(node.tags);
   const tags = allTags.slice(0, 2);
   const tasks = orderedTasks();
   const lanes = tasks.slice(0, 3).map(t => `
@@ -1412,7 +1430,7 @@ function renderRow(view, withLanes) {
   if (state.settings.showFinance) {
     const sym = node.currency || '¥';
     const has = view.price > 0;
-    const price = has ? `${sym}${num(view.price, view.price % 1 ? 2 : 0)}` : '免费';
+    const price = has ? `${sym}${num(view.price, view.price % 1 ? 2 : 0)}` : view.priceNote;
     if (refs.price.textContent !== price) refs.price.textContent = price;
     const cycle = has ? `/ ${billingText(node.billing_cycle)}` : '';
     if (refs.cycle.textContent !== cycle) refs.cycle.textContent = cycle;
@@ -1426,8 +1444,10 @@ function renderRow(view, withLanes) {
     if (refs.finDays.textContent !== days) refs.finDays.textContent = days;
     refs.finDays.dataset.level = dayLevel;
     const subBits = [];
-    if (has) subBits.push(`残值 ¥${num(view.remainCny, view.remainCny >= 1000 ? 0 : 1)}`);
-    subBits.push(`月 ¥${num(view.monthlyCny, view.monthlyCny >= 100 ? 0 : 1)}`);
+    if (has) {
+      subBits.push(`残值 ¥${num(view.remainCny, view.remainCny >= 1000 ? 0 : 1)}`);
+      subBits.push(`月 ¥${num(view.monthlyCny, view.monthlyCny >= 100 ? 0 : 1)}`);
+    }
     const finSub = subBits.join(' · ');
     if (refs.finSub.textContent !== finSub) refs.finSub.textContent = finSub;
     const finLines = ['!费用'];
@@ -1436,7 +1456,7 @@ function renderRow(view, withLanes) {
       finLines.push(`剩余|${view.days === null ? '无到期' : `${view.days} 天`}`);
       finLines.push(`残值|¥${num(view.remainCny, 2)}`);
     } else {
-      finLines.push('价格|免费');
+      finLines.push(`价格|${view.priceNote}`);
       finLines.push(`到期|${fmtDate(node.expired_at, '无到期时间')}`);
     }
     finLines.push(`月成本|¥${num(view.monthlyCny, 2)}`);
@@ -1783,8 +1803,10 @@ function buildDetail(uuid, panel) {
     ['流量配额', view.limit > 0 ? `${fmtBytes(view.limit)}（${trafficTypeText(view.limitType)}）` : '无'],
     ['计费周期', billingText(node.billing_cycle)],
     ['到期', `${fmtDate(node.expired_at, '无到期时间')}${safeDate(node.expired_at) && view.days !== null ? `（剩 ${view.days} 天）` : ''}`],
-    ['剩余价值', view.price > 0 ? `原币 ${node.currency || '¥'}${num(remainValue(view.price, node.billing_cycle, node.expired_at), 2)} · 折合 ¥${num(view.remainCny, 2)}` : '免费'],
-    ['月成本', `¥${num(view.monthlyCny, 2)}`],
+    ...(state.settings.showFinance ? [
+      ['剩余价值', view.price > 0 ? `原币 ${node.currency || '¥'}${num(remainValue(view.price, node.billing_cycle, node.expired_at), 2)} · 折合 ¥${num(view.remainCny, 2)}` : view.priceNote],
+      ['月成本', `¥${num(view.monthlyCny, 2)}`],
+    ] : []),
     ['自动续费', node.auto_renewal ? '是' : '否'],
     ['纳管时间', fmtDate(node.created_at)],
     ['在线时长', view.online ? fmtUptime(view.uptime) : '离线'],
@@ -2150,6 +2172,7 @@ async function bootOnce() {
   }
   $('#wallError').hidden = true;
   $('#grid').hidden = false;
+  buildSummary(); // 汇总格子取决于刚读到的设置（showFinance）
   if (!state.nodes.length) {
     $('#wallError').hidden = false;
     $('#grid').hidden = true;
@@ -2551,6 +2574,11 @@ window.addEventListener('pagehide', () => {
   stopRealtime();
   stopPolling();
   for (const t of lifeTimers.splice(0)) clearInterval(t);
+});
+
+// 从往返缓存恢复时连接和定时器都已停掉，重新载入，免得页面停在旧数据上
+window.addEventListener('pageshow', (ev) => {
+  if (ev.persisted) location.reload();
 });
 
 boot();

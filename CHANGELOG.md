@@ -2,10 +2,25 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.4.1 — 2026-11-03
+
+### Fixed
+
+- Turning off `showFinance` now really hides every amount: the 月成本 and 剩余价值 tiles become process
+  and connection counts, and the detail panel drops its money rows. Before, both tiles kept showing yuan.
+- A price of `0` means the price was never filled in, so the card says `未填价格` instead of `免费`;
+  only `-1` (Komari's convention) reads as `免费`. Cards without a price no longer show `月 ¥0.0`.
+- One-time (`-1`) or blank billing cycles no longer count the full price as a monthly cost.
+- Privacy mode now hides tags on the card face too, not only in the detail panel.
+- Coming back to the page through the browser's back/forward cache reloads it, instead of leaving it
+  frozen on stale numbers with the realtime connection closed.
+- README: the manual install path is `data/theme/StatusWall/`, and the `historyHours` / `showTrace`
+  descriptions match what the settings do. The `showTrace` setting is renamed to match too.
+
 ## 2.4.0 — 2026-11-03
 
 First public release. Rolls up the 2.3.2 hardening pass below, plus the visual work from a study of
-the seven most-starred Komari themes (`reference/`; the comparison is written up in `DESIGN.md`).
+the seven most-starred Komari themes.
 Nothing from those themes was copied: only the ideas that survived a side-by-side check were kept.
 
 ### Added
