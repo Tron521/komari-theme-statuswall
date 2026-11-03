@@ -5,12 +5,12 @@
   },
   "short": "StatusWall",
   "description": {
-    "zh-CN": "Solarized 米白底 + 半透明玻璃：每台机器一张圆角玻璃卡，卡面直接给出 CPU/内存/硬盘（含「已用 / 总量」）、累计流量与配额、三网延迟丢包信号条（3×24）、价格与剩余价值；8 台一屏看全，点卡片任意处展开 20 项传感器明细与 4 张逐小时趋势图（折线只在详情里），浅色/深色两套配色，可在设置里按机器名或 UUID 隐藏指定机器。",
-    "en": "Solarized cream glass: each server gets a rounded glass card showing CPU/memory/disk (used / total), cumulative traffic and quota, a 3×24 latency/loss signal strip, cost and remaining value — all eight on one screen. Click anywhere to open 20 sensor rows and four hourly trend charts (the line charts live only in the detail view). Light and dark schemes, and any node can be hidden by name or UUID in settings."
+    "zh-CN": "Solarized 米白底 + 半透明玻璃：每台机器一张圆角玻璃卡，卡面直接给出 CPU/内存/硬盘（含「已用 / 总量」）、累计流量与配额、三网延迟丢包信号条（3×24）、价格与剩余价值；卡头用小状态条标出在线 / 告警 / 离线，异常的机器可在顶栏一键跳过去。8 台一屏看全，点卡片任意处展开 20 余项传感器明细（含进程数、连接数）与 4 张逐小时趋势图（折线只在详情里）。浅色 / 深色两套配色，可在设置里按机器名或 UUID 隐藏机器、让离线机器排到最后，页脚还能放一行备案号。",
+    "en": "Solarized cream glass: each server gets a rounded glass card showing CPU/memory/disk (used / total), cumulative traffic and quota, a 3×24 latency/loss signal strip, cost and remaining value. A small status chip marks online / warning / offline, and the header can jump straight to the nodes that need attention. All eight fit on one screen; click anywhere to open 20+ sensor rows (process and connection counts included) and four hourly trend charts (the line charts live only in the detail view). Light and dark schemes, hide any node by name or UUID, sort offline nodes last, and put a filing number in the footer."
   },
-  "version": "2.3.2",
+  "version": "2.4.0",
   "author": "0xoo",
-  "url": "",
+  "url": "https://github.com/Tron521/komari-theme-statuswall",
   "preview": "preview.png",
   "configuration": {
     "type": "managed",
@@ -98,6 +98,52 @@
         "help": {
           "zh-CN": "填机器名或 UUID，多个用逗号 / 空格 / 分号分隔，例如 node-a, 8acf。UUID 可以只写前 4 位（后台机器列表里能看到），大小写不敏感；名字里带空格时请用逗号分隔（如 my server, node-a），只写名字会把同名的都隐藏。被隐藏的机器不显示卡片，也不计入汇总、提醒与页脚统计。",
           "en": "Node name or UUID, separated by comma / space / semicolon, e.g. node-a, 8acf. A 4-char UUID prefix is enough (see the UUID in the admin node list); case-insensitive. Separate names that contain spaces with commas (e.g. my server, node-a); a plain name hides every node with that name. Hidden nodes show no card and are excluded from totals, alerts and the footer."
+        }
+      },
+      {
+        "key": "offlineLast",
+        "name": {
+          "zh-CN": "离线机器排最后",
+          "en": "Offline nodes last"
+        },
+        "type": "switch",
+        "default": false,
+        "help": {
+          "zh-CN": "开启后，离线机器永远排在在线机器后面（置顶的机器仍最前）；离线状态变化时卡片会平滑换位。",
+          "en": "When on, offline nodes always sort after online ones (pinned nodes still come first); cards reorder smoothly when a node goes offline."
+        }
+      },
+      {
+        "type": "title",
+        "name": {
+          "zh-CN": "页脚",
+          "en": "Footer"
+        }
+      },
+      {
+        "key": "icpText",
+        "name": {
+          "zh-CN": "备案号 / 页脚文字",
+          "en": "ICP / footer text"
+        },
+        "type": "string",
+        "default": "",
+        "help": {
+          "zh-CN": "显示在页脚最后，适合放 ICP 备案号或一行说明（最多 80 字）。留空就不显示。",
+          "en": "Shown at the end of the footer, e.g. an ICP filing number or a short note (max 80 chars). Leave empty to hide."
+        }
+      },
+      {
+        "key": "icpUrl",
+        "name": {
+          "zh-CN": "备案链接（可选）",
+          "en": "ICP link (optional)"
+        },
+        "type": "string",
+        "default": "",
+        "help": {
+          "zh-CN": "只接受 http(s) 链接；填写后备案文字变成新标签页打开的链接，留空则只显示纯文字。",
+          "en": "http(s) only. When set, the footer text becomes a link that opens in a new tab; empty renders plain text."
         }
       },
       {

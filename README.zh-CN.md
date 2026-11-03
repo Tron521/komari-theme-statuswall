@@ -34,6 +34,7 @@ StatusWall 把 Komari 的节点列表做成一面能一眼扫完的墙。每台�
 - **数据就是画面。** 没有背景图、没有地球、没有地图。唯一的「图形」是延迟信号条，而它只因为背后有真实数据才存在。
 - **默认安静。** 折线只出现在展开的详情里，卡片上只给数字。
 - **一屏装下。** 1920×1080 下 8 台机器全部可见，不用滚动；布局按 4 / 3 / 2 / 1 列自适应，手机上也能用。
+- **先告诉你哪里不对。** 机器名旁边有小小的「在线 / 告警 / 离线」状态条，顶栏「N 台需关注」点一下直接跳到第一台有问题的机器；离线机器可以排在最后。
 - **键盘与读屏可用。** 所有操作都是原生按钮，有可见焦点环，详情按钮带 `aria-expanded` / `aria-controls`，
   置顶与隐私带 `aria-pressed`，提示在键盘聚焦时也会出现，尊重 `prefers-reduced-motion`，并提供打印样式。
 
@@ -55,7 +56,7 @@ StatusWall 把 Komari 的节点列表做成一面能一眼扫完的墙。每台�
 **从源码构建**
 
 ```bash
-git clone https://github.com/<you>/komari-theme-statuswall.git
+git clone https://github.com/Tron521/komari-theme-statuswall.git
 cd komari-theme-statuswall
 npm run build          # 生成 theme/dist（无依赖）
 npm run package        # 生成 dist-package/StatusWall-<version>.zip
@@ -73,6 +74,9 @@ npm run package        # 生成 dist-package/StatusWall-<version>.zip
 | `warnThreshold` | `85` | 使用率超过多少转琥珀色 |
 | `colorMode` | `auto` | `auto` / `light` / `dark`（顶栏切换会按浏览器覆盖） |
 | `hiddenNodes` | 空 | 逗号 / 空格 / 分号分隔的机器名或 4 位 UUID 前缀；被隐藏的机器不显示卡片，也不计入汇总、提醒和页脚 |
+| `offlineLast` | `false` | 离线机器排到最后（置顶的机器仍最前） |
+| `icpText` | 空 | 页脚文字，适合放 ICP 备案号（最多 80 字） |
+| `icpUrl` | 空 | 可选的 http(s) 链接；填写后备案文字在新标签页打开 |
 | `showFinance` | `true` | 是否显示价格 / 月成本 / 剩余价值 |
 | `usdCny` | `7.1` | `$` 价格的手动汇率 |
 | `eurCny` | `8.0` | `€` 价格的手动汇率 |

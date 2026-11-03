@@ -363,6 +363,13 @@ a { color: var(--blue-ink); touch-action: manipulation; }
 .pill b { font-weight: 600; }
 .pill.up { color: var(--up-ink); }
 .pill.down { color: var(--down-ink); }
+button.pill {
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+button.pill:hover { background: var(--card); }
+button.pill:active { transform: translateY(1px); }
 .pill.warn {
   color: var(--warn-ink);
   border-color: color-mix(in srgb, var(--warn) 34%, transparent);
@@ -377,8 +384,8 @@ a { color: var(--blue-ink); touch-action: manipulation; }
   background: var(--ok);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent);
 }
+/* 圆点只表示“是否全员在线”，告警严重度交给旁边的黄色按钮，避免同一件事两套颜色 */
 #onlinePill[data-level="warn"] .dot { background: var(--warn); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 20%, transparent); }
-#onlinePill[data-level="crit"] .dot { background: var(--crit); box-shadow: 0 0 0 3px color-mix(in srgb, var(--crit) 20%, transparent); }
 
 .tools {
   /* 状态与操作分组：一条发丝线就够了，不用再加框 */
@@ -527,7 +534,6 @@ html[data-scheme="dark"] .icon-btn .i-moon { display: block; }
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding-bottom: 2px;
 }
 
 .grid {
@@ -600,9 +606,8 @@ html::-webkit-scrollbar-thumb:hover {
 .card:hover { border-color: color-mix(in srgb, var(--blue) 26%, var(--card-line)); }
 
 .card[data-status="offline"] {
-  background:
-    repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--ink-4) 6%, transparent) 7px 8px),
-    color-mix(in srgb, var(--card) 92%, var(--base-2));
+  /* 离线：压暗 + 红细线即可。斜纹会让数字显得脏，也会和条形图抢纹理 */
+  background: color-mix(in srgb, var(--card) 92%, var(--base-2));
 }
 .card[data-status="offline"] .vv,
 .card[data-status="offline"] .net-sub { color: var(--ink-3); }
@@ -688,6 +693,41 @@ html::-webkit-scrollbar-thumb:hover {
 }
 .card[data-status="offline"] .led { background: var(--crit); box-shadow: 0 0 0 3px color-mix(in srgb, var(--crit) 16%, transparent); }
 
+/* 状态条：只有异常卡才出现，正常卡保持干净；不占布局（绝对定位） */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  pointer-events: none;
+  opacity: 0;
+
+}
+/* 离线卡一定显示红线；alert 的琥珀线只给"在线但异常"的卡 */
+.card[data-status="offline"]::after { opacity: 1; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--crit) 80%, transparent) 14%, color-mix(in srgb, var(--crit) 80%, transparent) 86%, transparent); }
+.card[data-alert="1"]:not([data-status="offline"])::after { opacity: 1; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--warn) 80%, transparent) 14%, color-mix(in srgb, var(--warn) 80%, transparent) 86%, transparent); }
+.card[data-alert="2"]:not([data-status="offline"])::after { opacity: 1; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--crit) 80%, transparent) 14%, color-mix(in srgb, var(--crit) 80%, transparent) 86%, transparent); }
+
+/* 名字旁的离线/告警文字胶囊：颜色之外的第二重信号 */
+.st-chip {
+  flex: 0 0 auto;
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 5px;
+  letter-spacing: 0.02em;
+  border: 1px solid currentColor;
+  color: var(--ink-3);
+  background: transparent;
+}
+.st-chip[data-kind="offline"] { color: var(--crit-ink); }
+.st-chip[data-kind="warn"] { color: var(--warn-ink); }
+.st-chip[data-kind="crit"] { color: var(--crit-ink); }
+
+/* 点「N 台需关注」→ 滚到第一台异常机器，短暂描边 */
+.card.flash { outline: 2px solid var(--warn-ink); outline-offset: 2px; }
+
 .card-id { min-width: 0; flex: 1 1 auto; }
 
 .card-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
@@ -707,7 +747,7 @@ html::-webkit-scrollbar-thumb:hover {
   /* 名字优先：空间不够时先压标签，而不是先切机器名 */
   flex: 0 3 auto;
   min-width: 0;
-  font-size: 10px;
+  font-size: 10.5px;
   line-height: 1;
   letter-spacing: 0.02em;
   padding: 3px 6px;
@@ -806,7 +846,7 @@ html::-webkit-scrollbar-thumb:hover {
   line-height: 1.2;
   white-space: nowrap;
 }
-.vv i { font-family: var(--font-ui); font-size: 9.5px; font-weight: 400; color: var(--ink-3); letter-spacing: 0.02em; margin-left: -1px; }
+.vv i { font-family: var(--font-ui); font-size: 10px; font-weight: 400; color: var(--ink-3); letter-spacing: 0.02em; margin-left: -1px; }
 .vv b[data-level="warn"] { color: var(--warn-ink); }
 .vv b[data-level="crit"] { color: var(--crit-ink); }
 
@@ -819,7 +859,7 @@ html::-webkit-scrollbar-thumb:hover {
   text-overflow: ellipsis;
   font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
-  font-size: 10.5px;
+  font-size: 11px;
   font-style: normal;
   color: var(--ink-3);
 }
@@ -853,7 +893,7 @@ html::-webkit-scrollbar-thumb:hover {
 .lane-head { display: flex; align-items: baseline; gap: 5px; min-width: 0; flex: 0 0 auto; }
 .lk { flex: 0 0 12px; font-size: 11px; color: var(--ink-2); text-align: center; }
 .lms { flex: 0 0 auto; min-width: 22px; text-align: right; font-size: 13px; font-weight: 500; color: var(--ink); }
-.lu { flex: 0 0 auto; margin-left: -1px; font-size: 9.5px; color: var(--ink-3); letter-spacing: 0.02em; }
+.lu { flex: 0 0 auto; margin-left: -1px; font-size: 10px; color: var(--ink-3); letter-spacing: 0.02em; }
 .lloss {
   flex: 0 0 auto;
   min-width: 34px;
@@ -1025,14 +1065,24 @@ html[data-scheme="dark"] .lbars i { background: color-mix(in srgb, var(--c, var(
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 11px;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 11.5px;
   color: var(--ink-2);
-  padding: 0 4px 2px;
+  padding: 0 4px;
   min-height: 16px;
 }
 .fmid { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fright { flex: 0 0 auto; white-space: nowrap; display: flex; align-items: center; gap: 10px; }
+.ficp {
+  flex: 0 0 auto;
+  color: var(--ink-3);
+  text-decoration: none;
+  border-bottom: 1px dotted color-mix(in srgb, var(--ink-4) 40%, transparent);
+  padding: 1px 2px;
+  border-radius: 4px;
+}
+a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
 .flk {
   border: 0;
   background: none;
@@ -1118,6 +1168,12 @@ html[data-scheme="dark"] .lbars i { background: color-mix(in srgb, var(--c, var(
   .card-sub .sub-tag { display: inline; }
 }
 
+/* 1280–1339 是四列里最窄的一档：单栏只有 78px，
+   11px 的「4.2 / 8.0 GB」会多出 6px 被省略号截断，收 1px 刚好放得下 */
+@media (min-width: 1280px) and (max-width: 1339px) {
+  .vd { font-size: 10px; }
+}
+
 @media (max-width: 1279px) {
   .deck { --card-pad: 14px; }
   .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: minmax(196px, auto); }
@@ -1169,14 +1225,27 @@ html[data-scheme="dark"] .lbars i { background: color-mix(in srgb, var(--c, var(
   .tile { padding: 10px 11px 10px; }
   .tk { font-size: 10px; }
   .tv { font-size: 16px; }
-  .ts { font-size: 9.5px; }
+  .ts { font-size: 10px; }
   .tile .track { margin-top: 6px; }
   .grid { grid-template-columns: 1fr; grid-auto-rows: auto; gap: 8px; }
   .card { gap: 6px; padding: 10px 12px 9px; border-radius: 15px; }
-  .card-sub { display: none; }
+  /* 手机上系统名和核数让位；负载和在线时长仍然一行可见，不藏进详情 */
+  .card-sub { margin-top: 2px; font-size: 11px; gap: 0 6px; }
+  .card-sub > [data-f="subOS"], .card-sub > [data-f="subCore"] { display: none; }
+  .card-sub > [data-f="subLoad"], .card-sub > [data-f="upT"] { font-size: 10.5px; }
   .nm { font-size: 14px; }
   .vitals { gap: 8px; }
   .vv { font-size: 15px; }
+  /* 手机上把三网条压薄一点，第二张卡能早一点露头 */
+  .pings { gap: 5px; }
+  .lane { gap: 8px; }
+  .lbars { height: 26px; }
+  .vital .track { margin-top: 5px; }
+  .vd { margin-top: 4px; }
+  /* 详情里的趋势图在窄屏必须整行，两列会把「现/峰」挤到换行 */
+  .card[data-expanded="true"] > .card-detail > .minis { grid-template-columns: 1fr; gap: 8px; }
+  .card[data-expanded="true"] .mini-plot { min-height: 44px; }
+  .mini-h { font-size: 11px; }
   .fin { gap: 2px; }
   .fin-sub { font-size: 10px; }
   .foot { font-size: 10px; }
@@ -1219,11 +1288,23 @@ html[data-scheme="dark"] .lbars i { background: color-mix(in srgb, var(--c, var(
 
 @media (max-width: 767px) {
   .strip {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* 单行横向滚动：8 台只占一行，首屏把高度让给卡片 */
+    display: flex;
+    flex-wrap: nowrap;
     gap: 6px;
     margin-top: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    /* 两端渐隐，暗示还能滑 */
+    mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 22px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 22px), transparent 100%);
+    padding: 1px 2px 2px;
   }
+  .strip::-webkit-scrollbar { display: none; }
+  .schip { scroll-snap-align: start; flex: 0 0 auto; }
   .schip {
     display: flex;
     align-items: center;
@@ -1503,14 +1584,3 @@ html[data-scheme="dark"] .toast { background: #063542; }
 
 
 .lbars i[data-none="1"] { opacity: 0.3; }
-
-/* 右端一枚小刻度：条带是往右走到「现在」的 */
-.lbars::before {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 1px;
-  height: 5px;
-  background: color-mix(in srgb, var(--ink-4) 45%, transparent);
-}

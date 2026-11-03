@@ -40,6 +40,9 @@ controls.
 - **Quiet by default.** Charts live only in the expanded detail view; the card shows numbers.
 - **One screen.** On a 1920×1080 viewport all eight nodes are visible without scrolling. The
   layout fits 4 / 3 / 2 / 1 columns to the window, so it also works on a phone.
+- **Says what's wrong first.** A small `在线` / `告警` / `离线` chip sits next to every name, and the
+  header's `N 台需关注` button jumps to the first card that needs attention. Offline nodes can be
+  sorted to the end of the wall.
 - **Keyboard and screen-reader aware.** Native buttons for every action, visible focus rings,
   `aria-expanded` / `aria-controls` on the detail toggle, `aria-pressed` on pin and privacy,
   tooltips that also appear on focus, `prefers-reduced-motion` respected, and a print stylesheet.
@@ -62,7 +65,7 @@ controls.
 **From source**
 
 ```bash
-git clone https://github.com/<you>/komari-theme-statuswall.git
+git clone https://github.com/Tron521/komari-theme-statuswall.git
 cd komari-theme-statuswall
 npm run build          # -> theme/dist (no dependencies)
 npm run package        # -> dist-package/StatusWall-<version>.zip
@@ -81,6 +84,9 @@ calls.
 | `warnThreshold` | `85` | Usage above which a vital turns amber |
 | `colorMode` | `auto` | `auto` / `light` / `dark` (the header toggle overrides it per browser) |
 | `hiddenNodes` | empty | Comma / space / semicolon separated node names or 4-char UUID prefixes; hidden nodes are excluded from cards, totals, alerts and the footer |
+| `offlineLast` | `false` | Sort offline nodes to the end of the wall (pinned nodes still come first) |
+| `icpText` | empty | Footer text such as an ICP filing number (max 80 chars) |
+| `icpUrl` | empty | Optional http(s) link for `icpText`; opens in a new tab |
 | `showFinance` | `true` | Show price / monthly cost / remaining value |
 | `usdCny` | `7.1` | Manual exchange rate for `$` prices |
 | `eurCny` | `8.0` | Manual exchange rate for `€` prices |

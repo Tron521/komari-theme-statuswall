@@ -40,7 +40,9 @@
           </span>
           <span class="pill up"><i aria-hidden="true">↑</i><b id="headUp">—</b></span>
           <span class="pill down"><i aria-hidden="true">↓</i><b id="headDown">—</b></span>
-          <span class="pill warn" id="headAlertWrap" hidden><b id="headAlert">0</b> 台需关注</span>
+          <button class="pill warn" id="headAlertWrap" type="button" hidden data-tip="!需要关注
+点击跳到第一台异常机器
+口径|离线或用量超过告警线的机器"><b id="headAlert">0</b> 台需关注</button>
         </div>
 
         <div class="tools">
@@ -88,6 +90,7 @@
 
       <footer class="foot">
         <span class="fleft">Powered by Komari Monitor</span>
+        <a class="ficp" id="footIcp" hidden></a>
         <span class="fmid" id="footMeta">等待首个数据包…</span>
         <span class="fright">
           <button class="flk" id="privacyBtn" type="button" aria-pressed="false" data-on="0" data-tip="!隐私模式

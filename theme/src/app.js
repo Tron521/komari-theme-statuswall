@@ -12,6 +12,9 @@ const DEFAULTS = {
   warnThreshold: 85,
   colorMode: 'auto',
   hiddenNodes: '',
+  offlineLast: false,
+  icpText: '',
+  icpUrl: '',
 };
 
 const SETTING_KEYS = Object.keys(DEFAULTS);
@@ -438,6 +441,10 @@ function applySettings(raw) {
   s.refreshInterval = clamp(s.refreshInterval, 2, 30);
   s.warnThreshold = clamp(s.warnThreshold, 50, 99);
   s.hiddenNodes = String(s.hiddenNodes == null ? '' : s.hiddenNodes);
+  // 备案信息只允许 http(s)，其余当纯文本处理，避免把 javascript: 塞进页脚
+  s.icpText = String(s.icpText == null ? '' : s.icpText).trim().slice(0, 80);
+  const icpUrl = String(s.icpUrl == null ? '' : s.icpUrl).trim().slice(0, 200);
+  s.icpUrl = /^https?:\/\//i.test(icpUrl) ? icpUrl : '';
   state.settings = s;
   state.hiddenTokens = parseHiddenNodes(s.hiddenNodes);
   if (typeof document !== 'undefined') applyScheme();
@@ -921,6 +928,8 @@ function summaryCells(s) {
   const traffic = bytesParts(s.traffic);
   const up = bytesParts(s.up);
   const down = bytesParts(s.down);
+  /* 390px 下流量副行会截断成「· 6 …」；窄屏只留配额，计费台数放回 tooltip */
+  const narrow = typeof window !== 'undefined' && window.innerWidth < 480;
   return [
     {
       key: 'mem', label: '总内存', v: mem.v, u: mem.u, tone: '',
@@ -936,7 +945,7 @@ function summaryCells(s) {
     },
     {
       key: 'traffic', label: '累计流量', v: traffic.v, u: traffic.u, tone: '',
-      sub: s.quota > 0 ? `配额 ${fmtBytes(s.quota)} · ${s.metered} 台计费` : '全部机器无配额',
+      sub: s.quota > 0 ? (narrow ? `配额 ${fmtBytes(s.quota)}` : `配额 ${fmtBytes(s.quota)} · ${s.metered} 台计费`) : '全部机器无配额',
       bar: s.quota > 0 ? { p: quotaPct, level: levelOf(quotaPct, warnAt, 95) } : null,
       tip: s.quota > 0
         ? ['!累计流量（自 agent 安装起）', `已用|${fmtBytes(s.traffic)}`, `配额|${fmtBytes(s.quota)}`, `剩余|${fmtBytes(Math.max(0, s.quota - s.quotaUsed))}`, `计费机器|${s.metered} 台`].join('\n')
@@ -1032,6 +1041,7 @@ function cardHTML(node) {
         <div class="card-name">
           ${flag ? `<span class="flag" aria-hidden="true">${flag}</span>` : ''}
           <span class="nm" data-f="name" translate="no">${name}</span>
+          <span class="st-chip" data-f="st" hidden></span>
           ${tags.map((t, i) => `<span class="chip tag${i === 1 ? ' t2' : ''}" data-tip="${allTags.length > 1 ? `!标签\n${allTags.map(escapeHTML).join(' · ')}` : `!标签\n${escapeHTML(t)}`}">${escapeHTML(t)}</span>`).join('')}
         </div>
         <div class="card-sub">${tags.length ? `<span class="sub-tag" translate="no">${escapeHTML(tags.join(' · '))}</span>` : ''}<span data-f="subOS">—</span><span data-f="subCore"></span><span data-f="subLoad"></span><span data-f="upT"></span></div>
@@ -1141,13 +1151,24 @@ function sortKeyOf(node) {
   return 0;
 }
 
+function isOnlineNode(node) {
+  const live = state.live.get(node.uuid);
+  // 还没拿到实时数据时按在线处理，避免开机瞬间整墙跳动
+  return live ? live.online !== false : true;
+}
+
 function sortedNodes() {
   const list = state.nodes.slice();
-  if (!state.pins.size && state.sort === 'default') return list;
+  if (!state.pins.size && state.sort === 'default' && !state.settings.offlineLast) return list;
   return list.sort((a, b) => {
     const pa = state.pins.has(a.uuid) ? 0 : 1;
     const pb = state.pins.has(b.uuid) ? 0 : 1;
     if (pa !== pb) return pa - pb;
+    if (state.settings.offlineLast) {
+      const oa = isOnlineNode(a) ? 0 : 1;
+      const ob = isOnlineNode(b) ? 0 : 1;
+      if (oa !== ob) return oa - ob;
+    }
     if (state.sort === 'default') return 0;
     return sortKeyOf(b) - sortKeyOf(a);
   });
@@ -1314,6 +1335,15 @@ function renderRow(view, withLanes) {
   setText(refs.subLoad, `负载 ${num(view.load1, 2)}`);
   const upT = view.online ? `在线 ${fmtUptime(view.uptime)}` : `离线 ${fmtAgo(Date.parse(view.live.status_updated_at || ''))}`;
   if (refs.upT && refs.upT.textContent !== upT) refs.upT.textContent = upT;
+
+  /* 离线/告警不再只靠颜色：名字旁给一枚文字胶囊，扫视层直接可读 */
+  if (refs.st) {
+    const kind = view.online ? (view.alert >= 2 ? 'crit' : view.alert ? 'warn' : '') : 'offline';
+    const label = kind === 'offline' ? '离线' : kind === 'crit' ? '严重' : kind ? '告警' : '';
+    if (refs.st.hidden !== !kind) refs.st.hidden = !kind;
+    if (refs.st.textContent !== label) refs.st.textContent = label;
+    if (refs.st.dataset.kind !== kind) refs.st.dataset.kind = kind;
+  }
 
   // CPU / 内存 / 硬盘
   const cpuLevel = levelOf(view.cpu, state.settings.warnThreshold, 95);
@@ -1483,7 +1513,7 @@ function renderLanes(view, withLanes) {
     if (!buckets || !buckets.some(Boolean)) {
       lane.dataset.empty = '1';
       for (const bar of bars) {
-        bar.style.setProperty('--h', '0.06');
+        bar.style.setProperty('--h', '0');
         bar.style.setProperty('--c', 'var(--ink-4)');
         bar.style.setProperty('--loss', '0');
         delete bar.dataset.ms;
@@ -1503,7 +1533,7 @@ function renderLanes(view, withLanes) {
       const bk = buckets[i];
       const bar = bars[i];
       if (!bk || (bk.ms == null && bk.loss <= 0)) {
-        bar.style.setProperty('--h', '0.06');
+        bar.style.setProperty('--h', '0');
         bar.style.setProperty('--c', 'var(--ink-4)');
         bar.style.setProperty('--loss', '0');
         bar.dataset.none = '1';
@@ -1839,6 +1869,13 @@ function renderLive() {
     buildRows();
     state.stripLanesDirty = true;
   }
+  if (state.settings.offlineLast) {
+    const sig = state.nodes.map(n => (isOnlineNode(n) ? '1' : '0')).join('');
+    if (sig !== state.offlineSig) {
+      state.offlineSig = sig;
+      applyOrder();
+    }
+  }
   const views = state.order.map(uuid => computeNodeView(state.nodeByUuid.get(uuid)));
   renderAll(views);
   state.everLoaded = true;
@@ -1859,6 +1896,22 @@ function renderLive() {
   }
 }
 
+function jumpToAttention() {
+  const uuid = state.order.find((u) => {
+    const v = computeNodeView(state.nodeByUuid.get(u));
+    return !v.online || v.alert;
+  });
+  if (!uuid) return;
+  const el = state.refs.get(uuid) && state.refs.get(uuid).root;
+  if (!el) return;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 1600);
+}
+
 function updateHead(s, total) {
   const online = $('#headOnline');
   const txt = `${s.online} / ${total}`;
@@ -1868,7 +1921,8 @@ function updateHead(s, total) {
   if ($('#headUp').textContent !== up) $('#headUp').textContent = up;
   if ($('#headDown').textContent !== down) $('#headDown').textContent = down;
   const pill = $('#onlinePill');
-  const level = s.offline > 0 ? 'crit' : s.alerts > 0 ? 'warn' : 'ok';
+  /* 圆点 = 是否全员在线；告警严重度由旁边的“N 台需关注”表达，不重复上色 */
+  const level = s.offline > 0 ? 'warn' : 'ok';
   if (pill.dataset.level !== level) pill.dataset.level = level;
   const setTip = (sel, text) => { const el = $(sel); if (el && el.dataset.tip !== text) el.dataset.tip = text; };
   const onlineTip = ['!在线状态', `在线|${s.online} 台`, `离线|${s.offline} 台`, `显示|${total} 台`];
@@ -1881,6 +1935,8 @@ function updateHead(s, total) {
     alertWrap.hidden = false;
     const t = `${s.alerts}`;
     if ($('#headAlert').textContent !== t) $('#headAlert').textContent = t;
+    const label = `跳转到需要关注的机器（${s.alerts} 台）`;
+    if (alertWrap.getAttribute('aria-label') !== label) alertWrap.setAttribute('aria-label', label);
   } else {
     alertWrap.hidden = true;
   }
@@ -1903,6 +1959,29 @@ function updateFoot(s) {
     : '';
   const r = $('#footRates');
   if (r.textContent !== rates) r.textContent = rates;
+
+  /* 备案信息：名字必填、链接可选；只接受 http(s) */
+  const icp = $('#footIcp');
+  if (icp) {
+    const text = state.settings.icpText;
+    if (text) {
+      if (icp.textContent !== text) icp.textContent = text;
+      if (state.settings.icpUrl) {
+        if (icp.getAttribute('href') !== state.settings.icpUrl) {
+          icp.setAttribute('href', state.settings.icpUrl);
+          icp.setAttribute('target', '_blank');
+          icp.setAttribute('rel', 'noopener noreferrer');
+        }
+      } else if (icp.hasAttribute('href')) {
+        icp.removeAttribute('href');
+        icp.removeAttribute('target');
+        icp.removeAttribute('rel');
+      }
+      icp.hidden = false;
+    } else {
+      icp.hidden = true;
+    }
+  }
 }
 
 function setLink(kind, text) {
@@ -2412,6 +2491,8 @@ function initBackToTop() {
 
 function initUX() {
   initTip();
+  const alertWrap = $('#headAlertWrap');
+  if (alertWrap) alertWrap.addEventListener('click', jumpToAttention);
   initCrosshair();
   initKeyboard();
   initBackToTop();

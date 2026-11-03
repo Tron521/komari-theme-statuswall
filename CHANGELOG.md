@@ -2,7 +2,49 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
-## 2.3.2 — unreleased
+## 2.4.0 — 2026-11-03
+
+First public release. Rolls up the 2.3.2 hardening pass below, plus the visual work from a study of
+the seven most-starred Komari themes (`reference/`; the comparison is written up in `DESIGN.md`).
+Nothing from those themes was copied: only the ideas that survived a side-by-side check were kept.
+
+### Added
+
+- A status chip next to each node name — `在线` / `告警` / `离线` — so an unhealthy card is readable
+  before you parse its numbers, and a warning card no longer looks identical to a healthy one.
+- The header's `N 台需关注` is now a button: it scrolls to the first node that needs attention and
+  outlines that card for 1.6 s.
+- `offlineLast` setting: keep offline nodes at the end of the wall (pinned nodes still come first).
+  Cards reorder smoothly when a node goes offline or comes back.
+- `icpText` / `icpUrl` settings for a footer filing number (plain text, or an http(s) link that opens
+  in a new tab).
+- A one-line machine overview under the totals on phones, with tap-to-jump links to each card.
+
+### Changed
+
+- Offline cards drop the diagonal hatch and keep only a dimmed surface and the red top rule; the
+  texture made the numbers look dirty and fought the signal bars.
+- The header's online dot now only says whether everyone is online (amber when a node is down).
+  Severity is left to the `N 台需关注` button instead of colouring the same fact twice.
+- Phones keep `负载` and `在线时长` on every card and hide only the OS name and core count (both stay
+  in the detail panel), instead of hiding the whole line.
+- The machine overview strip scrolls horizontally on phones with a fade at both ends, instead of
+  wrapping to a second row above the cards.
+- Detail trend charts go full width on phones, so `现 / 峰` no longer wraps mid-label.
+- The 1920×1080 layout is tightened to fit without a scrollbar: cards, the wall and the footer add
+  up to exactly 1080 px.
+
+### Fixed
+
+- Empty latency buckets no longer paint a 1.5 px stub at the bottom of each row (they are 0-high now).
+- Removed the `now` tick that crossed the right edge of the signal bars on narrow cards.
+- On phones the traffic sub-line is shortened to `配额 X` under 480 px, so it stops truncating.
+- Fixed the mobile detail panel still laying the trend charts out in two columns (a more specific
+  desktop rule won over the phone one), which squeezed the labels into wrapped text.
+- At 1280–1339 px — four columns at their tightest — the `used / total` line under each gauge lost
+  its unit to an ellipsis (`4.2 / 8.0…`); that line drops 1 px in this band so it fits.
+
+## 2.3.2 — rolled into 2.4.0
 
 Hardening and accessibility pass ahead of the first public release.
 
