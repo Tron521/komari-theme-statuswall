@@ -548,8 +548,7 @@ a.btn[hidden] { display: none; }
   min-height: min-content;
 }
 
-/* 机器数变化时（例如隐藏了几台）按行数反推列数，别让最后一行空一大块。
-   JS 已按断点封顶，这里的属性选择器只是为了压过上面的默认 4 列。 */
+/* 列数由 JS 按断点给出，属性选择器压过上面的默认 4 列。 */
 .grid[data-cols="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid[data-cols="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grid[data-cols="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }

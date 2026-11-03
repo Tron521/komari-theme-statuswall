@@ -2,6 +2,14 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.5.1 — 2026-11-03
+
+### Fixed
+
+- The column count now depends only on the window width. Before, hiding nodes could drop a wide screen
+  to three columns (five nodes became 3 + 2) or stretch two nodes across the whole row. Five nodes are
+  now 4 + 1 and every card keeps the same size.
+
 ## 2.5.0 — 2026-11-03
 
 ### Added

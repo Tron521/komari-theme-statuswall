@@ -1260,7 +1260,7 @@ function cycleSort() {
   toast(`排序：${(SORTS.find(s => s.key === state.sort) || SORTS[0]).label}`);
 }
 
-// 卡片列数：按断点封顶，再按「行数固定、列数最少」反推，让最后一行尽量填满
+// 卡片列数：按断点封顶
 function maxCols() {
   // 与 style.css 里 .grid 的断点严格对齐：≥1024 → 4 列，≤1023 → 2，≤767 → 1
   const w = window.innerWidth || 1920;
@@ -1269,23 +1269,15 @@ function maxCols() {
   return 1;
 }
 
-function fitCols(n) {
-  const cap = maxCols();
-  if (!n) return 1;
-  let cols = Math.max(1, Math.min(cap, n));
-  while (cols > 1) {
-    const rows = Math.ceil(n / cols);
-    const next = Math.ceil(n / rows);
-    if (next >= cols) break;
-    cols = next;
-  }
-  return Math.min(cols, cap);
+// 列数只看屏幕宽度（5 台就是 4 + 1），机器少时留空位，卡片大小不随机器数变化
+function fitCols() {
+  return maxCols();
 }
 
 function applyCols() {
   const grid = $('#grid');
   if (!grid) return;
-  const cols = String(fitCols(state.nodes.length));
+  const cols = String(fitCols());
   if (grid.dataset.cols !== cols) grid.dataset.cols = cols;
 }
 
