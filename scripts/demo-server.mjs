@@ -70,6 +70,17 @@ function rpc(body) {
   return { jsonrpc: '2.0', id, result };
 }
 
+// 演示站没有后台：「登录」按钮点进来看到的说明页
+const ADMIN_PAGE = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>演示站 · 没有后台</title><style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fdf6e3;color:#586e75;font:15px/1.7 system-ui,-apple-system,"PingFang SC","Noto Sans CJK SC",sans-serif}
+main{max-width:30em;padding:28px 30px;border-radius:18px;background:rgba(255,255,255,.55);border:1px solid #e4dcc4;box-shadow:0 10px 30px rgba(88,110,117,.12)}
+h1{margin:0 0 8px;font-size:20px;color:#073642}a{color:#268bd2}
+</style></head><body><main><h1>这是 StatusWall 的演示站</h1>
+<p>页面上的机器和数字都是合成数据，所以这里没有真正的 Komari 后台。</p>
+<p>装到你自己的 Komari 上后，这个按钮会进入你的管理后台；不想让访客看到它，可以在主题设置里关闭「显示后台入口」。</p>
+<p><a href="/">← 回到演示页</a> · <a href="https://github.com/Tron521/komari-theme-statuswall">GitHub</a></p></main></body></html>`;
+
 const send = (res, code, type, body) => {
   res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-cache' });
   res.end(body);
@@ -110,6 +121,7 @@ const server = createServer(async (req, res) => {
       return json(res, rpc(body));
     }
     if (pathname.startsWith('/api/')) return send(res, 404, 'text/plain', 'not available in demo');
+    if (pathname === '/admin' || pathname.startsWith('/admin/')) return send(res, 200, 'text/html; charset=utf-8', ADMIN_PAGE);
     return await serveFile(res, pathname);
   } catch (err) {
     send(res, 500, 'text/plain', String(err && err.message));

@@ -439,6 +439,8 @@ html[data-scheme="dark"] .icon-btn .i-moon { display: block; }
 }
 .btn:hover { color: var(--ink); border-color: var(--line); }
 .btn:active { transform: translateY(0.5px); }
+a.btn { text-decoration: none; }
+a.btn[hidden] { display: none; }
 
 /* 大屏：更松的间距与更大的数字 */
 @media (min-width: 1600px) {
@@ -1163,7 +1165,7 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
 }
 
 /* 中等宽度：卡片变窄，标签从名字后面挪到第二行，机器名不再被挤成省略号 */
-@media (min-width: 768px) and (max-width: 1439px) {
+@media (min-width: 768px) and (max-width: 1599px) {
   .card-name .chip.tag { display: none; }
   .card-sub .sub-tag { display: inline; }
 }
@@ -1174,13 +1176,51 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
   .vd { font-size: 10px; }
 }
 
-@media (max-width: 1279px) {
-  .deck { --card-pad: 14px; }
-  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: minmax(196px, auto); }
+/* 1024–1599：始终一行 4 张，卡片收紧一档（信号条变矮、留白变小），8 台尽量一屏放下 */
+@media (min-width: 1024px) and (max-width: 1599px) {
+  .deck { --card-pad: 13px; }
+  .card { gap: 8px; }
+  .vitals { gap: 9px; }
+  .vv { font-size: 15px; }
+  .pings { gap: 5px; }
+  .lbars { height: 22px; }
+  .fin { padding-top: 6px; }
+}
+
+/* 宽但矮的窗口（如 1600×900、1680×1050）同样收紧，两行卡片放得进一屏 */
+@media (min-width: 1600px) and (max-height: 1060px) {
+  .deck { --card-pad: 15px; }
+  .card { gap: 8px; }
+  .pings { gap: 5px; }
+  .lbars { height: 24px; }
+  .fin { padding-top: 6px; }
+}
+
+/* 1024–1279 是四列里最窄的一档：数值和「已用 / 总量」再收一号 */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .deck { --card-pad: 11px; }
+  .vitals { gap: 7px; }
+  .vv { font-size: 14px; }
+  .vd { font-size: 9.5px; letter-spacing: -0.02em; }
+  .vl { font-size: 10px; }
+  .nm { font-size: 14px; letter-spacing: 0; }
+  .card-name { gap: 4px; }
+  .card-head { gap: 6px; }
+  .pin, .more { width: 26px; height: 26px; margin: -4px -4px 0 0; }
+  .card-sub { font-size: 10.5px; gap: 0 6px; }
+  /* 在线时长跟在负载后面，不再单独甩到第三行 */
+  .card-sub > [data-f="upT"] { margin-left: 0; padding-left: 0; }
+  /* 三栏各只有 60 多像素：标签放到数字上方 */
+  .vl { flex-direction: column; align-items: flex-start; gap: 0; }
+  .vv { margin-left: 0; }
+  .net-sub { font-size: 11px; }
 }
 
 @media (max-width: 1099px) {
   .site, .link { display: none; }
+}
+
+@media (max-width: 1023px) {
   /* 汇总条改成 3 列：仍然是同一块账本，只换成发丝线分格 */
   .totals { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
   .totals > .tile:nth-child(n + 4) { border-top: 1px solid var(--line-2); }
@@ -1192,8 +1232,8 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
   /* 平板宽度：按钮只留图标，品牌与状态不打架 */
   #sortBtn { padding: 0 9px; gap: 0; }
   #sortBtn #sortLabel, #sortBtn svg:last-child { display: none; }
-  #refreshBtn { padding: 0 9px; gap: 0; }
-  #refreshBtn .btn-t { display: none; }
+  #refreshBtn, #adminBtn { padding: 0 9px; gap: 0; }
+  #refreshBtn .btn-t, #adminBtn .btn-t { display: none; }
   .fleft { display: none; }
 }
 
@@ -1495,8 +1535,8 @@ html[data-scheme="dark"] .tip { background: #063542; border-color: rgba(147, 161
 /* 宽屏：左右留白阶梯放大，卡片不贴着窗口边 */
 @media (max-width: 430px) {
   /* 极窄屏：刷新只留图标，品牌名不再被挤掉 */
-  #refreshBtn { padding: 0 10px; gap: 0; }
-  #refreshBtn .btn-t { display: none; }
+  #refreshBtn, #adminBtn { padding: 0 10px; gap: 0; }
+  #refreshBtn .btn-t, #adminBtn .btn-t { display: none; }
 }
 
 @media (min-width: 1200px) { .deck { --pad-x: 34px; } }

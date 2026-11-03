@@ -2,6 +2,24 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.5.0 — 2026-11-03
+
+### Added
+
+- A `登录` / `后台` button in the header that opens `/admin`. It reads `/api/me`, so a signed-in admin
+  sees `后台`. The new `showAdmin` setting (default on) hides it; `/admin` itself keeps working.
+- `npm run demo` serves the theme with synthetic nodes (no Komari needed); its `/admin` explains that
+  the demo has no admin panel.
+
+### Changed
+
+- Four cards per row from 1024 px wide up (was 1280 px; 1024–1279 showed three oversized cards).
+  A compact tier for 1024–1599 px and for wide-but-short windows (≥1600 px wide, ≤1060 px tall) makes
+  the ping strip shorter and trims padding, so eight cards fit on one screen at 1440×900 and 1920×950.
+- In the narrowest four-column band (1024–1279 px) the vital labels sit above the numbers, `used/total`
+  drops the spaces around the slash, and the uptime follows the load on the same line.
+- The totals bar stays one row of six tiles down to 1024 px (it used to fold into two rows below 1100 px).
+
 ## 2.4.1 — 2026-11-03
 
 ### Fixed

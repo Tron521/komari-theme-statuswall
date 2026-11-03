@@ -89,6 +89,7 @@ calls.
 | `showTrace` | `true` | Show the four hourly trend charts in the detail panel |
 | `warnThreshold` | `85` | Usage above which a vital turns amber |
 | `colorMode` | `auto` | `auto` / `light` / `dark` (the header toggle overrides it per browser) |
+| `showAdmin` | `true` | Show the Login / Admin button in the header (links to `/admin`); turning it off only hides the button |
 | `hiddenNodes` | empty | Comma / space / semicolon separated node names or 4-char UUID prefixes; hidden nodes are excluded from cards, totals, alerts and the footer |
 | `offlineLast` | `false` | Sort offline nodes to the end of the wall (pinned nodes still come first) |
 | `icpText` | empty | Footer text such as an ICP filing number (max 80 chars) |

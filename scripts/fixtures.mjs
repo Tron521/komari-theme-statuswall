@@ -17,6 +17,7 @@ export const THEME_SETTINGS = {
   warnThreshold: 85,
   colorMode: 'auto',
   hiddenNodes: '',
+  showAdmin: true,
   showFinance: true,
   usdCny: 7.1,
   eurCny: 8.0,

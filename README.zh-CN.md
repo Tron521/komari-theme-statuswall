@@ -79,6 +79,7 @@ npm run package        # 生成 dist-package/StatusWall-<version>.zip
 | `showTrace` | `true` | 是否在详情面板里显示四张逐小时趋势图 |
 | `warnThreshold` | `85` | 使用率超过多少转琥珀色 |
 | `colorMode` | `auto` | `auto` / `light` / `dark`（顶栏切换会按浏览器覆盖） |
+| `showAdmin` | `true` | 顶栏右侧显示「登录 / 后台」按钮（指向 `/admin`）；关闭只隐藏按钮，`/admin` 照常可用 |
 | `hiddenNodes` | 空 | 逗号 / 空格 / 分号分隔的机器名或 4 位 UUID 前缀；被隐藏的机器不显示卡片，也不计入汇总、提醒和页脚 |
 | `offlineLast` | `false` | 离线机器排到最后（置顶的机器仍最前） |
 | `icpText` | 空 | 页脚文字，适合放 ICP 备案号（最多 80 字） |

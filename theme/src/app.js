@@ -13,6 +13,7 @@ const DEFAULTS = {
   colorMode: 'auto',
   hiddenNodes: '',
   offlineLast: false,
+  showAdmin: true,
   icpText: '',
   icpUrl: '',
 };
@@ -111,7 +112,9 @@ function pairText(used, total) {
   if (u.unit !== t.unit) return `${shortBytes(used)} / ${shortBytes(total)}`;
   const du = u.value < 10 ? 1 : 0;
   const dt = t.value < 10 ? 1 : 0;
-  return `${num(u.value, du)} / ${num(t.value, dt)} ${t.unit}`;
+  // 四列最窄的一档（1024–1279）去掉斜杠两侧空格，省下的宽度刚好不被省略号截断
+  const sep = typeof window !== 'undefined' && window.innerWidth >= 1024 && window.innerWidth < 1280 ? '/' : ' / ';
+  return `${num(u.value, du)}${sep}${num(t.value, dt)} ${t.unit}`;
 }
 
 // CPU 用「占用核数 / 总核数」，占用核数按百分比换算
@@ -388,9 +391,30 @@ async function loadMeta() {
   } catch {
     /* ping 任务拿不到时，用记录里出现的任务兜底 */
   }
+  applyAdminButton();
   $('#footRates').textContent = state.settings.showFinance
     ? `汇率 $1=¥${num(state.settings.usdCny, 2)} · €1=¥${num(state.settings.eurCny, 2)}`
     : '';
+}
+
+/* 后台入口：按设置显示；已登录时叫「后台」，否则叫「登录」 */
+function applyAdminButton() {
+  const btn = $('#adminBtn');
+  if (!btn) return;
+  btn.hidden = !state.settings.showAdmin;
+  if (btn.hidden) return;
+  const setLabel = (loggedIn) => {
+    const text = loggedIn ? '后台' : '登录';
+    $('#adminLabel').textContent = text;
+    btn.setAttribute('aria-label', loggedIn ? '进入管理后台' : '登录管理后台');
+    btn.dataset.tip = loggedIn ? '进入管理后台' : '登录管理后台';
+  };
+  setLabel(false);
+  // 判断登录态要带上 Cookie；拿不到就保持「登录」
+  fetch('/api/me', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    .then(r => (r.ok ? r.json() : null))
+    .then((j) => { if (j && j.data && j.data.logged_in) setLabel(true); })
+    .catch(() => {});
 }
 
 function cleanName(v) {
@@ -1238,10 +1262,9 @@ function cycleSort() {
 
 // 卡片列数：按断点封顶，再按「行数固定、列数最少」反推，让最后一行尽量填满
 function maxCols() {
-  // 与 style.css 里 .grid 的断点严格对齐：≥1280 → 4 列，≤1279 → 3，≤1023 → 2，≤767 → 1
+  // 与 style.css 里 .grid 的断点严格对齐：≥1024 → 4 列，≤1023 → 2，≤767 → 1
   const w = window.innerWidth || 1920;
-  if (w >= 1280) return 4;
-  if (w >= 1024) return 3;
+  if (w >= 1024) return 4;
   if (w >= 768) return 2;
   return 1;
 }
