@@ -6,7 +6,11 @@
 
 ![StatusWall 在 1280×720 视口下的样子](theme/preview.png)
 
-更多截图见 [docs/screenshots](docs/screenshots)。
+| 桌面（1920×1080） | 手机（390×844） |
+| --- | --- |
+| <img src="docs/screenshots/desktop.png" alt="桌面" width="560"> | <img src="docs/screenshots/mobile.png" alt="手机" width="200"> |
+
+截图都是虚构的演示数据。笔记本尺寸见 [docs/screenshots/laptop.png](docs/screenshots/laptop.png)。
 
 ## 这是什么
 

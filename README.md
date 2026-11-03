@@ -6,7 +6,11 @@
 
 ![StatusWall on a 1280×720 viewport](theme/preview.png)
 
-More screenshots: [docs/screenshots](docs/screenshots).
+| Desktop (1920×1080) | Phone (390×844) |
+| --- | --- |
+| <img src="docs/screenshots/desktop.png" alt="Desktop" width="560"> | <img src="docs/screenshots/mobile.png" alt="Phone" width="200"> |
+
+All screenshots use synthetic demo data. Laptop size: [docs/screenshots/laptop.png](docs/screenshots/laptop.png).
 
 ## What it is
 
