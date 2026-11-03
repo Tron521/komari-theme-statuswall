@@ -2,6 +2,22 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.6.1 — 2026-11-03
+
+### Fixed (phones)
+
+- CPU / memory / disk labels sit above their numbers, so a value no longer runs into the next column's
+  label (`34.3% 内存`).
+- Uptime follows the load on the sub line instead of floating to the middle of the card.
+- The site name shows next to the sun mark, so the header is no longer half empty; it gives way when the
+  `N 台需关注` button needs the room.
+- Below 360 px, `used/total` drops the spaces around the slash so it is not cut off.
+
+### Changed
+
+- Packet loss next to each line is plain coloured text everywhere (red when heavy), instead of a red
+  outlined badge for some lines and plain text for others.
+
 ## 2.6.0 — 2026-11-03
 
 ### Changed

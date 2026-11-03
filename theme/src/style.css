@@ -1255,9 +1255,17 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
   .card-sub { margin-top: 2px; font-size: 11px; gap: 0 6px; }
   .card-sub > [data-f="subOS"], .card-sub > [data-f="subCore"] { display: none; }
   .card-sub > [data-f="subLoad"], .card-sub > [data-f="upT"] { font-size: 10.5px; }
+  /* 在线时长紧跟负载，不再被推到中间偏右 */
+  .card-sub > [data-f="upT"] { margin-left: 0; padding-left: 0; }
   .nm { font-size: 14px; }
-  .vitals { gap: 8px; }
-  .vv { font-size: 15px; }
+  /* 三栏各只有一百来像素：标签放到数字上方，数字和下一栏的标签不再贴在一起 */
+  .vitals { gap: 14px; }
+  .vl { flex-direction: column; align-items: flex-start; gap: 1px; }
+  .vv { margin-left: 0; font-size: 16px; }
+  /* 品牌字让位后，左上角显示站点名，顶栏不再空一大块 */
+  .site { display: block; padding-left: 0; border-left: 0; font-size: 13px; font-weight: 600; color: var(--ink-2); max-width: 11ch; }
+  /* 有「N 台需关注」时顶栏放不下站点名：让给告警，别挤成「D…」 */
+  .top:has(#headAlertWrap:not([hidden])) .site { display: none; }
   .pings { gap: 6px; }
   .lane { gap: 8px; }
   .lbars { height: 13px; }
@@ -1279,7 +1287,7 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
 }
 
 @media (max-width: 420px) {
-  .vitals { gap: 6px; }
+  .vitals { gap: 12px; }
   .tv { font-size: 15px; }
 }
 
@@ -1604,13 +1612,8 @@ html[data-scheme="dark"] .toast { background: #063542; }
   .toast { bottom: 18px; }
 }
 
-/* 丢包只在明显时给一枚淡红胶囊，平时保持安静 */
-.lloss[data-lv="crit"] {
-  /* 淡红底会把对比度吃到 4.2，改成描边保色相、文字保可读 */
-  color: var(--crit-ink);
-  background: transparent;
-  border: 1px solid color-mix(in srgb, var(--crit) 30%, transparent);
-}
+/* 丢包统一用文字颜色表达轻重，不再有的带框有的不带 */
+.lloss[data-lv="crit"] { color: var(--crit-ink); font-weight: 600; }
 .lloss[data-lv="warn"] { color: var(--warn-ink); }
 
 

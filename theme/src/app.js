@@ -122,8 +122,9 @@ function pairText(used, total) {
   if (u.unit !== t.unit) return `${shortBytes(used)} / ${shortBytes(total)}`;
   const du = u.value < 10 ? 1 : 0;
   const dt = t.value < 10 ? 1 : 0;
-  // 四列最窄的一档（1024–1279）去掉斜杠两侧空格，省下的宽度刚好不被省略号截断
-  const sep = typeof window !== 'undefined' && window.innerWidth >= 1024 && window.innerWidth < 1280 ? '/' : ' / ';
+  // 四列最窄的一档（1024–1279）和 360 以下的小屏去掉斜杠两侧空格，省下的宽度刚好不被省略号截断
+  const w = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  const sep = (w >= 1024 && w < 1280) || w < 360 ? '/' : ' / ';
   return `${num(u.value, du)}${sep}${num(t.value, dt)} ${t.unit}`;
 }
 
