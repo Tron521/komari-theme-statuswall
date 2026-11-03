@@ -2,6 +2,14 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.5.2 — 2026-11-03
+
+### Fixed
+
+- On phones and tablets the admin button keeps its `登录` / `后台` label; a lone lock icon next to the
+  refresh button was easy to miss. Below 430 px the clipped `KOMARI` wordmark gives way (the sun mark
+  stays), and below 360 px the header spacing tightens so the button stays inside the bar at 320 px.
+
 ## 2.5.1 — 2026-11-03
 
 ### Fixed

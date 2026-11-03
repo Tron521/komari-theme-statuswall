@@ -1231,8 +1231,10 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
   /* 平板宽度：按钮只留图标，品牌与状态不打架 */
   #sortBtn { padding: 0 9px; gap: 0; }
   #sortBtn #sortLabel, #sortBtn svg:last-child { display: none; }
-  #refreshBtn, #adminBtn { padding: 0 9px; gap: 0; }
-  #refreshBtn .btn-t, #adminBtn .btn-t { display: none; }
+  #refreshBtn { padding: 0 9px; gap: 0; }
+  #refreshBtn .btn-t { display: none; }
+  /* 后台入口保留文字：只剩锁图标时认不出来 */
+  #adminBtn { padding: 0 10px; gap: 4px; }
   .fleft { display: none; }
 }
 
@@ -1533,9 +1535,20 @@ html[data-scheme="dark"] .tip { background: #063542; border-color: rgba(147, 161
 
 /* 宽屏：左右留白阶梯放大，卡片不贴着窗口边 */
 @media (max-width: 430px) {
-  /* 极窄屏：刷新只留图标，品牌名不再被挤掉 */
-  #refreshBtn, #adminBtn { padding: 0 10px; gap: 0; }
-  #refreshBtn .btn-t, #adminBtn .btn-t { display: none; }
+  /* 极窄屏：刷新只留图标；后台入口留文字、去掉锁图标；品牌只留图标，不再被挤成「KO」 */
+  #refreshBtn { padding: 0 10px; gap: 0; }
+  #refreshBtn .btn-t { display: none; }
+  #adminBtn { padding: 0 9px; gap: 0; }
+  #adminBtn svg { display: none; }
+  .wordmark { display: none; }
+}
+
+/* 320–359（老款小屏）：品牌图标也让位，按钮间距再收，「登录」不被挤出顶栏 */
+@media (max-width: 359px) {
+  .brand { display: none; }
+  .tools { gap: 4px; padding-left: 6px; }
+  .live { gap: 4px; }
+  .live .pill { padding-left: 7px; padding-right: 7px; }
 }
 
 @media (min-width: 1200px) { .deck { --pad-x: 34px; } }
