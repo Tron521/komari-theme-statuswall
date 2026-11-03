@@ -2,6 +2,18 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.6.4 — 2026-11-03
+
+### Fixed
+
+- Phones: pressing and dragging along the three-network strip now shows that moment's latency and loss
+  for all three lines. Before, the global "hide tooltip on press" handler closed it first and the drag
+  only updated a tooltip that was already open, so nothing appeared. On touch the tooltip sits above the
+  strip, out from under the finger, and stays 2.5 s after lifting so a single tap is readable.
+- Horizontal drags on the strip no longer turn into page gestures (`touch-action: pan-y`); vertical
+  swipes still scroll the page.
+- Tapping or clicking the strip no longer expands the card; tap anywhere else on the card to expand.
+
 ## 2.6.3 — 2026-11-03
 
 ### Changed

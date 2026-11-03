@@ -1318,7 +1318,8 @@ function buildRows() {
     if (pin) pin.addEventListener('click', () => togglePin(uuid));
     // 整张卡片都能点开/收起（键盘仍走上面的按钮）；选中文字时不误触
     el.addEventListener('click', (ev) => {
-      if (ev.target.closest('a, button, input, select, textarea, label')) return;
+      // 状态条是用来按住看某一刻的，点它不展开卡片
+      if (ev.target.closest('a, button, input, select, textarea, label, .lbars')) return;
       const picked = window.getSelection ? String(window.getSelection()) : '';
       if (picked.length > 1) return;
       toggleDetail(uuid);
@@ -2386,6 +2387,12 @@ function initTip() {
     const target = ev.target.closest && ev.target.closest('[data-tip]');
     if (!target || target !== tip.target) return;
     if (ev.relatedTarget && target.contains(ev.relatedTarget)) return;
+    // 触屏抬手后三网对比再留 2.5 秒，轻点一下也来得及看清
+    if (ev.pointerType !== 'mouse' && target.classList.contains('pings')) {
+      clearTimeout(tip.timer);
+      tip.timer = setTimeout(() => { tipHide(); clearXhair(target); target.setAttribute('data-tip', pingsTip()); }, 2500);
+      return;
+    }
     tipHide();
   });
   document.addEventListener('pointerdown', tipHide, true);
@@ -2411,58 +2418,81 @@ function clearXhair(root) {
   for (const bar of $$('.lbars i.cur', root)) bar.classList.remove('cur');
 }
 
+/* 指向（鼠标悬停或手指按住）某一格：三条线同时高亮，提示给出那一刻的三网对比。
+   force 为真时即使提示还没打开也立刻显示（触屏没有悬停，只能按住拖） */
+function xhairAt(pings, target, clientX, clientY, force) {
+  // 左边文字列不是数据列：停在标签上时显示「这是什么」的说明，而不是某一刻的对比
+  if (target.closest('.lane-head')) {
+    if (pings.dataset.x) clearXhair(pings);
+    return;
+  }
+  const bars = pings.querySelector('.lbars');
+  if (!bars || !bars.children.length) return;
+  const r = bars.getBoundingClientRect();
+  if (!r.width) return;
+  const n = bars.children.length;
+  const idx = Math.min(n - 1, Math.max(0, Math.floor((clientX - r.left) / (r.width / n))));
+  // 触屏时提示放在状态条上方，不被手指挡住；鼠标时跟着指针
+  const anchor = force ? pings : { clientX, clientY };
+  if (pings.dataset.x === String(idx)) {
+    if (tip.open) tipPlace(anchor);
+    else if (force) tipShow(pings.getAttribute('data-tip'), anchor);
+    return;
+  }
+  pings.dataset.x = String(idx);
+  const lanes = $$('.lane', pings);
+  for (const lane of lanes) {
+    const bs = lane.querySelectorAll('.lbars i');
+    for (let i = 0; i < bs.length; i += 1) bs[i].classList.toggle('cur', i === idx);
+  }
+  const xh = $('.xhair', pings);
+  if (xh) {
+    const pr = pings.getBoundingClientRect();
+    xh.style.left = `${Math.round(r.left - pr.left + (idx + 0.5) * (r.width / n))}px`;
+  }
+  const rows = lanes.map((lane) => {
+    const key = ($('.lk', lane) || {}).textContent || '';
+    const laneBars = lane.querySelector('.lbars');
+    const b = laneBars && laneBars.children[idx];
+    const ms = b && b.dataset ? b.dataset.ms : '';
+    const loss = b && b.dataset ? b.dataset.loss : '';
+    const lv = b && b.dataset ? b.dataset.lv : '';
+    if (!lv) return `${key}|—`;
+    return `${key}|${ms ? `${ms} ms` : '全部超时'} · 丢 ${loss}% · ${SEG_TEXT[lv]}`;
+  });
+  const first = lanes[0] && lanes[0].querySelector('.lbars');
+  const t0 = first && first.children[idx] ? first.children[idx].dataset.t : '';
+  const t0d = t0 ? safeDate(Number(t0)) : null;
+  const head = t0d ? `!${hmFmt.format(t0d)} 前后` : '!三网延迟';
+  const text = `${head}\n${rows.join('\n')}`;
+  pings.setAttribute('data-tip', text);
+  if (tip.open || force) {
+    tip.target = pings;
+    tipShow(text, anchor);
+  }
+}
+
 function initCrosshair() {
   document.addEventListener('pointermove', (ev) => {
     const pings = ev.target.closest && ev.target.closest('.pings');
     if (!pings) return;
-    // 左边文字列不是数据列：停在标签上时显示「这是什么」的说明，而不是某一刻的对比
-    if (ev.target.closest('.lane-head')) {
-      if (pings.dataset.x) clearXhair(pings);
-      return;
-    }
-    const bars = pings.querySelector('.lbars');
-    if (!bars || !bars.children.length) return;
-    const r = bars.getBoundingClientRect();
-    if (!r.width) return;
-    const n = bars.children.length;
-    const idx = Math.min(n - 1, Math.max(0, Math.floor((ev.clientX - r.left) / (r.width / n))));
-    if (pings.dataset.x === String(idx)) {
-      if (tip.open) tipPlace({ clientX: ev.clientX, clientY: ev.clientY });
-      return;
-    }
-    pings.dataset.x = String(idx);
-    const lanes = $$('.lane', pings);
-    for (const lane of lanes) {
-      const bs = lane.querySelectorAll('.lbars i');
-      for (let i = 0; i < bs.length; i += 1) bs[i].classList.toggle('cur', i === idx);
-    }
-    const xh = $('.xhair', pings);
-    if (xh) {
-      const pr = pings.getBoundingClientRect();
-      xh.style.left = `${Math.round(r.left - pr.left + (idx + 0.5) * (r.width / n))}px`;
-    }
-    const rows = lanes.map((lane) => {
-      const key = ($('.lk', lane) || {}).textContent || '';
-      const laneBars = lane.querySelector('.lbars');
-      const b = laneBars && laneBars.children[idx];
-      const ms = b && b.dataset ? b.dataset.ms : '';
-      const loss = b && b.dataset ? b.dataset.loss : '';
-      const lv = b && b.dataset ? b.dataset.lv : '';
-      if (!lv) return `${key}|—`;
-      return `${key}|${ms ? `${ms} ms` : '全部超时'} · 丢 ${loss}% · ${SEG_TEXT[lv]}`;
-    });
-    const first = lanes[0] && lanes[0].querySelector('.lbars');
-    const t0 = first && first.children[idx] ? first.children[idx].dataset.t : '';
-    const t0d = t0 ? safeDate(Number(t0)) : null;
-    const head = t0d ? `!${hmFmt.format(t0d)} 前后` : '!三网延迟';
-    const text = `${head}\n${rows.join('\n')}`;
-    pings.setAttribute('data-tip', text);
-    if (tip.open) tipShow(text, { clientX: ev.clientX, clientY: ev.clientY });
+    xhairAt(pings, ev.target, ev.clientX, ev.clientY, ev.pointerType !== 'mouse');
   });
+
+  /* 触屏：手指按在状态条上就显示那一刻。全局的 pointerdown（捕获阶段）会先收起提示，
+     这里在它之后注册，所以能立刻重新打开 */
+  document.addEventListener('pointerdown', (ev) => {
+    if (ev.pointerType === 'mouse') return;
+    const pings = ev.target.closest && ev.target.closest('.pings');
+    if (!pings || !ev.target.closest('.lbars')) return;
+    delete pings.dataset.x;
+    xhairAt(pings, ev.target, ev.clientX, ev.clientY, true);
+  }, true);
 
   document.addEventListener('pointerout', (ev) => {
     const pings = ev.target.closest && ev.target.closest('.pings');
     if (!pings) return;
+    if (ev.pointerType !== 'mouse') return; // 触屏由上面的延时收起
     if (ev.relatedTarget && pings.contains(ev.relatedTarget)) return;
     clearXhair(pings);
     pings.setAttribute('data-tip', pingsTip());

@@ -920,6 +920,10 @@ html::-webkit-scrollbar-thumb:hover {
   gap: 2px;
   height: 14px;
   min-width: 40px;
+  /* 横向拖动留给「按住看某一刻」，上下滑仍然滚动页面 */
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .lbars i {
   flex: 1 1 0;

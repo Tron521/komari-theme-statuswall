@@ -2,7 +2,7 @@
   "name": "StatusWall 状态墙",
   "short": "StatusWall",
   "description": "为小机群设计的 Komari 状态墙：Solarized 玻璃卡片，一屏看全每台机器的 CPU / 内存 / 硬盘、流量与配额、三网延迟丢包状态条、价格与剩余价值，没有地图和地球。A Solarized glass status wall for small Komari fleets: every metric on the card, three-network ping status strips, no maps.",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "author": "0xoo",
   "url": "https://github.com/Tron521/komari-theme-statuswall",
   "preview": "preview.png",
