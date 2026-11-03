@@ -1,14 +1,8 @@
 {
-  "name": {
-    "zh-CN": "Komari 状态墙",
-    "en": "Komari StatusWall"
-  },
+  "name": "StatusWall 状态墙",
   "short": "StatusWall",
-  "description": {
-    "zh-CN": "Solarized 米白底 + 半透明玻璃：每台机器一张圆角玻璃卡，卡面直接给出 CPU/内存/硬盘（含「已用 / 总量」）、累计流量与配额、三网延迟丢包信号条（3×24）、价格与剩余价值；卡头用小状态条标出在线 / 告警 / 离线，异常的机器可在顶栏一键跳过去。8 台一屏看全，点卡片任意处展开 20 余项传感器明细（含进程数、连接数）与 4 张逐小时趋势图（折线只在详情里）。浅色 / 深色两套配色，可在设置里按机器名或 UUID 隐藏机器、让离线机器排到最后，页脚还能放一行备案号。",
-    "en": "Solarized cream glass: each server gets a rounded glass card showing CPU/memory/disk (used / total), cumulative traffic and quota, a 3×24 latency/loss signal strip, cost and remaining value. A small status chip marks online / warning / offline, and the header can jump straight to the nodes that need attention. All eight fit on one screen; click anywhere to open 20+ sensor rows (process and connection counts included) and four hourly trend charts (the line charts live only in the detail view). Light and dark schemes, hide any node by name or UUID, sort offline nodes last, and put a filing number in the footer."
-  },
-  "version": "2.6.2",
+  "description": "为小机群设计的 Komari 状态墙：Solarized 玻璃卡片，一屏看全每台机器的 CPU / 内存 / 硬盘、流量与配额、三网延迟丢包状态条、价格与剩余价值，没有地图和地球。A Solarized glass status wall for small Komari fleets: every metric on the card, three-network ping status strips, no maps.",
+  "version": "2.6.3",
   "author": "0xoo",
   "url": "https://github.com/Tron521/komari-theme-statuswall",
   "preview": "preview.png",

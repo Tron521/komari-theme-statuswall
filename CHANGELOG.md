@@ -2,6 +2,13 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.6.3 — 2026-11-03
+
+### Changed
+
+- `name` and `description` in `komari-theme.json` are plain strings (Chinese and English together)
+  instead of i18n objects, so the Komari theme market's automatic submission check accepts the package.
+
 ## 2.6.2 — 2026-11-03
 
 ### Fixed
