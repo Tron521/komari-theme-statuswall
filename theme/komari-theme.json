@@ -1,0 +1,172 @@
+{
+  "name": {
+    "zh-CN": "Komari 状态墙",
+    "en": "Komari StatusWall"
+  },
+  "short": "StatusWall",
+  "description": {
+    "zh-CN": "Solarized 米白底 + 半透明玻璃：每台机器一张圆角玻璃卡，卡面直接给出 CPU/内存/硬盘（含「已用 / 总量」）、累计流量与配额、三网延迟丢包信号条（3×24）、价格与剩余价值；8 台一屏看全，点卡片任意处展开 20 项传感器明细与 4 张逐小时趋势图（折线只在详情里），浅色/深色两套配色，可在设置里按机器名或 UUID 隐藏指定机器。",
+    "en": "Solarized cream glass: each server gets a rounded glass card showing CPU/memory/disk (used / total), cumulative traffic and quota, a 3×24 latency/loss signal strip, cost and remaining value — all eight on one screen. Click anywhere to open 20 sensor rows and four hourly trend charts (the line charts live only in the detail view). Light and dark schemes, and any node can be hidden by name or UUID in settings."
+  },
+  "version": "2.3.2",
+  "author": "0xoo",
+  "url": "",
+  "preview": "preview.png",
+  "configuration": {
+    "type": "managed",
+    "icon": "/themes/StatusWall/dist/assets/favicon.svg",
+    "name": {
+      "zh-CN": "状态墙设置",
+      "en": "StatusWall settings"
+    },
+    "data": [
+      {
+        "type": "title",
+        "name": {
+          "zh-CN": "实时与历史",
+          "en": "Live & history"
+        }
+      },
+      {
+        "key": "refreshInterval",
+        "name": {
+          "zh-CN": "实时刷新间隔（秒）",
+          "en": "Live refresh interval (s)"
+        },
+        "type": "number",
+        "default": 3,
+        "help": {
+          "zh-CN": "通过 /api/clients WebSocket 拉取实时数据的间隔，2–30 秒。",
+          "en": "Interval for pulling live data over the /api/clients WebSocket, 2–30s."
+        }
+      },
+      {
+        "key": "historyHours",
+        "name": {
+          "zh-CN": "波形历史窗口（小时）",
+          "en": "Trace history window (hours)"
+        },
+        "type": "select",
+        "options": "1,2,3,6",
+        "default": "2",
+        "help": {
+          "zh-CN": "波形带与三网走势覆盖的时间范围，窗口越长单次请求的数据量越大。",
+          "en": "Time span of the trace band and ping trend; longer windows fetch more data."
+        }
+      },
+      {
+        "key": "showTrace",
+        "name": {
+          "zh-CN": "显示波形带",
+          "en": "Show trace band"
+        },
+        "type": "switch",
+        "default": true,
+        "help": {
+          "zh-CN": "关闭后每台机器只显示数字，页面更轻。",
+          "en": "Turn off to show numbers only."
+        }
+      },
+      {
+        "key": "warnThreshold",
+        "name": {
+          "zh-CN": "高负载预警阈值（%）",
+          "en": "High-load warning threshold (%)"
+        },
+        "type": "number",
+        "default": 85,
+        "help": {
+          "zh-CN": "CPU、内存、硬盘或流量使用率达到该值时标黄，达到 95% 标红。",
+          "en": "CPU, memory, disk or traffic turns amber at this value and red at 95%."
+        }
+      },
+      {
+        "type": "title",
+        "name": {
+          "zh-CN": "显示范围",
+          "en": "What to show"
+        }
+      },
+      {
+        "key": "hiddenNodes",
+        "name": {
+          "zh-CN": "隐藏的机器",
+          "en": "Hidden nodes"
+        },
+        "type": "string",
+        "default": "",
+        "help": {
+          "zh-CN": "填机器名或 UUID，多个用逗号 / 空格 / 分号分隔，例如 node-a, 8acf。UUID 可以只写前 4 位（后台机器列表里能看到），大小写不敏感；名字里带空格时请用逗号分隔（如 my server, node-a），只写名字会把同名的都隐藏。被隐藏的机器不显示卡片，也不计入汇总、提醒与页脚统计。",
+          "en": "Node name or UUID, separated by comma / space / semicolon, e.g. node-a, 8acf. A 4-char UUID prefix is enough (see the UUID in the admin node list); case-insensitive. Separate names that contain spaces with commas (e.g. my server, node-a); a plain name hides every node with that name. Hidden nodes show no card and are excluded from totals, alerts and the footer."
+        }
+      },
+      {
+        "type": "title",
+        "name": {
+          "zh-CN": "外观",
+          "en": "Appearance"
+        }
+      },
+      {
+        "key": "colorMode",
+        "name": {
+          "zh-CN": "配色模式",
+          "en": "Colour mode"
+        },
+        "type": "select",
+        "options": "auto,light,dark",
+        "default": "auto",
+        "help": {
+          "zh-CN": "auto 跟随系统；light 为 Solarized Light 暖色；dark 为 Solarized Dark。页面右上角也有切换按钮。",
+          "en": "auto follows the system; light is Solarized Light; dark is Solarized Dark. A toggle also sits in the top-right corner."
+        }
+      },
+      {
+        "type": "title",
+        "name": {
+          "zh-CN": "财务换算",
+          "en": "Currency"
+        }
+      },
+      {
+        "key": "showFinance",
+        "name": {
+          "zh-CN": "显示价格、成本与剩余价值",
+          "en": "Show price, cost and remaining value"
+        },
+        "type": "switch",
+        "default": true,
+        "help": {
+          "zh-CN": "关闭后页面不出现任何金额，适合公开站点。",
+          "en": "Hide all amounts, useful for a public site."
+        }
+      },
+      {
+        "key": "usdCny",
+        "name": {
+          "zh-CN": "美元汇率（1 美元 = ? 人民币）",
+          "en": "USD rate (1 USD = ? CNY)"
+        },
+        "type": "number",
+        "default": 7.1,
+        "help": {
+          "zh-CN": "汇总月成本与剩余价值时把美元价格折算成人民币，行内仍显示原币种。",
+          "en": "Used to convert USD prices for the CNY totals; rows keep their original currency."
+        }
+      },
+      {
+        "key": "eurCny",
+        "name": {
+          "zh-CN": "欧元汇率（1 欧元 = ? 人民币）",
+          "en": "EUR rate (1 EUR = ? CNY)"
+        },
+        "type": "number",
+        "default": 8.0,
+        "help": {
+          "zh-CN": "汇总时把欧元价格折算成人民币。",
+          "en": "Used to convert EUR prices for the CNY totals."
+        }
+      }
+    ]
+  }
+}

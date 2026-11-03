@@ -1,0 +1,28 @@
+# 依赖（含本地测试用的 symlink）
+node_modules
+node_modules/
+
+# 构建产物：dist 由 npm run build 生成，发布包不进仓库
+theme/dist/
+dist-package/
+site/
+*.zip
+
+# 本地开发／截图用的私有资产，不随仓库发布
+dev/
+shots/
+.tools/
+.dsh/
+reference/
+DESIGN.md
+PROMPT.md
+publish.sh
+
+# 环境
+.env
+.env.*
+
+# 系统
+.DS_Store
+Thumbs.db
+*.log

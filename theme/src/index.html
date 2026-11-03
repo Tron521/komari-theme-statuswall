@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN" data-scheme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fdf6e3" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#002b36" />
+    <title>Komari Monitor</title>
+    <meta name="description" content="A simple server monitor tool." />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/assets/fonts/plex-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/plex-600.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/assets/style.css?v={{V}}" />
+  </head>
+  <body>
+    <div id="app" class="deck" data-state="boot">
+      <h1 class="sr-only">Komari 状态墙 — 服务器状态</h1>
+      <a class="skip" href="#grid">跳到节点卡片</a>
+
+      <noscript class="boot-msg">这个主题需要 JavaScript 才能显示实时数据。</noscript>
+      <p class="sr-only" id="srLive" role="status" aria-live="polite"></p>
+
+      <header class="top">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4.2" />
+              <path d="M12 2.2v2.4M12 19.4v2.4M2.2 12h2.4M19.4 12h2.4M5.1 5.1l1.7 1.7M17.2 17.2l1.7 1.7M18.9 5.1l-1.7 1.7M6.8 17.2l-1.7 1.7" />
+            </svg>
+          </span>
+          <span class="wordmark"><b translate="no">KOMARI</b><i>状态墙</i></span>
+          <span class="site" id="siteName" translate="no">Komari</span>
+        </div>
+
+        <div class="live" aria-label="整体实时状态">
+          <span class="pill" id="onlinePill">
+            <i class="dot" aria-hidden="true"></i>
+            <span id="headOnline">—</span>
+          </span>
+          <span class="pill up"><i aria-hidden="true">↑</i><b id="headUp">—</b></span>
+          <span class="pill down"><i aria-hidden="true">↓</i><b id="headDown">—</b></span>
+          <span class="pill warn" id="headAlertWrap" hidden><b id="headAlert">0</b> 台需关注</span>
+        </div>
+
+        <div class="tools">
+          <span class="link" id="linkState" role="status" aria-live="polite">连接中…</span>
+          <time class="clock" id="clock" datetime="">--:--:--</time>
+          <button class="icon-btn" id="schemeBtn" type="button" aria-label="切换浅色与深色">
+            <svg class="i-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" /><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" />
+            </svg>
+            <svg class="i-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8Z" />
+            </svg>
+          </button>
+          <button class="btn sort" id="sortBtn" type="button" aria-label="切换排序方式">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14M5 8l3-3 3 3M16 19V5M13 16l3 3 3-3" /></svg>
+            <span id="sortLabel">默认</span>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6" /></svg>
+          </button>
+          <button class="btn" id="refreshBtn" type="button" aria-label="刷新数据">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+              <path d="M20 11a8 8 0 1 0-.9 4.6M20 5v6h-6" />
+            </svg>
+            <span class="btn-t">刷新</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="totals" id="summary" aria-label="整体汇总">
+        <!-- 汇总卡片由脚本填充 -->
+      </section>
+
+      <nav class="strip" id="strip" aria-label="机器总览"></nav>
+
+      <main class="wall" id="wall" aria-label="节点状态">
+        <div class="grid" id="grid"></div>
+        <div class="fail" id="wallError" hidden role="alert">
+          <p id="wallErrorText">读不到 Komari 的公开接口。检查网络后重试，或确认站点没有开启「私有站点」。</p>
+          <button class="btn" id="retryBtn" type="button">重试</button>
+        </div>
+      </main>
+
+      <button class="totop" id="toTop" type="button" aria-label="回到顶部" hidden>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+      </button>
+
+      <footer class="foot">
+        <span class="fleft">Powered by Komari Monitor</span>
+        <span class="fmid" id="footMeta">等待首个数据包…</span>
+        <span class="fright">
+          <button class="flk" id="privacyBtn" type="button" aria-pressed="false" data-on="0" data-tip="!隐私模式
+把机器名换成 Node-01 这样的代号，方便截图分享
+再点一次（或按 P）恢复">隐私</button>
+          <span id="footRates"></span>
+        </span>
+      </footer>
+    </div>
+
+    <div class="tip" id="tip" role="tooltip" aria-hidden="true"></div>
+    <p class="toast" id="toast" role="status" aria-live="polite"></p>
+
+    <script type="module" src="/assets/app.js?v={{V}}"></script>
+  </body>
+</html>
