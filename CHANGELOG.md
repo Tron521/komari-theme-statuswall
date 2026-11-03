@@ -2,6 +2,13 @@
 
 All notable changes to StatusWall. Versions follow the theme manifest (`theme/komari-theme.json`).
 
+## 2.6.2 — 2026-11-03
+
+### Fixed
+
+- Phone overview chips: the status dot inherited the card header's 6 px top margin and sat half a line
+  below the name; name and CPU figure now share one line height, so dot, name and number are centred.
+
 ## 2.6.1 — 2026-11-03
 
 ### Fixed (phones)

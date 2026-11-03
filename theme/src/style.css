@@ -1350,7 +1350,10 @@ a.ficp:hover { color: var(--ink-2); border-bottom-color: var(--ink-3); }
     color: var(--ink-2);
     text-decoration: none;
   }
-  .schip .led { width: 6px; height: 6px; flex: 0 0 auto; background: var(--ok); border-radius: 999px; }
+  /* 卡片头的圆点带 margin-top 去对齐机器名，这里要清掉，否则圆点比文字低半行 */
+  .schip .led { width: 6px; height: 6px; margin: 0; flex: 0 0 auto; background: var(--ok); border-radius: 999px; box-shadow: none; }
+  /* 名字和数字两种字体：统一行高，三者在胶囊里按中线对齐 */
+  .schip .snm, .schip b { line-height: 1.2; }
   .schip[data-status="offline"] .led { background: var(--crit); }
   .schip .snm {
     flex: 1 1 auto;
